@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -p RetroOS_MVP_Spec.docx word/document.xml)",
+      "Bash(sed 's/<[^>]*>//g')",
+      "Bash(grep -v '^[[:space:]]*$')",
+      "Bash(npm create:*)",
+      "Bash(where node:*)",
+      "Bash(where npx:*)",
+      "Bash(where npm:*)",
+      "Bash(cmd.exe /c \"node --version\")",
+      "Bash(cmd.exe /c \"npm --version\")",
+      "Bash(export PATH=\"$PATH:/c/Program Files/nodejs:/c/Users/antul/AppData/Roaming/npm\")",
+      "Bash(npm --version)",
+      "Bash(cmd.exe /c \"node --version && npm --version\" 2>&1)",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
+      "Bash(cp /tmp/retroos-temp/index.html /tmp/retroos-temp/vite.config.js /tmp/retroos-temp/eslint.config.js /tmp/retroos-temp/package.json /c/code/retroos/)",
+      "Bash(cp -r /tmp/retroos-temp/src /c/code/retroos/)",
+      "Bash(cp -r /tmp/retroos-temp/public /c/code/retroos/)",
+      "Bash(rm -rf /tmp/retroos-temp)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "Bash(npm run:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.gtk.org)",
+      "WebFetch(domain:wiki.xfce.org)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

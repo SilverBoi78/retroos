@@ -1,0 +1,54 @@
+.start-menu {
+  position: absolute;
+  bottom: calc(var(--taskbar-height));
+  left: 2px;
+  width: 200px;
+  background: var(--color-start-menu-bg);
+  box-shadow: var(--border-window);
+  padding: 3px;
+  z-index: 100000;
+}
+
+.start-menu__header {
+  padding: 8px;
+  background: var(--color-highlight);
+  margin-bottom: 2px;
+}
+
+.start-menu__logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.start-menu__apps {
+  padding: 2px 0;
+}
+
+.start-menu__app {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px;
+  text-align: left;
+  color: var(--color-text-primary);
+  font-size: 11px;
+}
+
+.start-menu__app:hover {
+  background: var(--color-menu-hover);
+  color: var(--color-menu-hover-text);
+}
+
+.start-menu__footer {
+  padding: 4px 8px;
+  border-top: 1px solid var(--color-surface-dark);
+  margin-top: 2px;
+}
+
+.start-menu__version {
+  font-size: 10px;
+  color: var(--color-text-disabled);
+}

@@ -1,0 +1,36 @@
+body {
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background: var(--color-desktop-bg);
+  -webkit-font-smoothing: auto;
+  user-select: none;
+}
+
+::selection {
+  background: var(--color-highlight);
+  color: var(--color-highlight-text);
+}
+
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  box-shadow: var(--border-sunken);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-button-face);
+  box-shadow: var(--border-raised);
+}
+
+::-webkit-scrollbar-button {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: var(--color-button-face);
+  box-shadow: var(--border-raised);
+}

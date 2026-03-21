@@ -1,0 +1,109 @@
+.taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--taskbar-height);
+  display: flex;
+  align-items: center;
+  padding: 2px 2px;
+  gap: 2px;
+  background: var(--color-taskbar-bg);
+  box-shadow: inset 0 1px 0 var(--color-surface-light);
+  z-index: 99999;
+}
+
+.taskbar__start {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  height: 24px;
+  box-shadow: var(--border-button);
+  background: var(--color-button-face);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.taskbar__start:active,
+.taskbar__start--active {
+  box-shadow: var(--border-button-pressed);
+  padding: 3px 5px 1px 7px;
+}
+
+.taskbar__start-icon {
+  font-size: 13px;
+  color: var(--color-text-primary);
+}
+
+.taskbar__start-text {
+  letter-spacing: 0;
+}
+
+.taskbar__divider {
+  width: 2px;
+  height: 24px;
+  flex-shrink: 0;
+  margin: 0 1px;
+  box-shadow: inset 1px 0 0 var(--color-surface-dark), inset -1px 0 0 var(--color-surface-light);
+}
+
+.taskbar__windows {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+.taskbar__windows::-webkit-scrollbar {
+  display: none;
+}
+
+.taskbar__window-btn {
+  padding: 2px 8px;
+  height: 24px;
+  box-shadow: var(--border-button);
+  background: var(--color-button-face);
+  font-size: 11px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  max-width: 160px;
+  min-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.taskbar__window-btn--active {
+  box-shadow: var(--border-button-pressed);
+  background: var(--color-surface-light);
+  font-weight: 700;
+  padding: 3px 7px 1px 9px;
+}
+
+.taskbar__spacer {
+  flex: 1;
+}
+
+.taskbar__clock {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 24px;
+  box-shadow: var(--border-sunken);
+  gap: 8px;
+}
+
+.taskbar__clock-time {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.taskbar__clock-date {
+  font-size: 11px;
+  color: var(--color-text-primary);
+}

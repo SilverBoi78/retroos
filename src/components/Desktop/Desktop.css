@@ -1,0 +1,31 @@
+.desktop {
+  width: 100%;
+  height: 100%;
+  background: var(--color-desktop-bg-pattern), var(--color-desktop-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.desktop__icons {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 1;
+}
+
+.desktop__windows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--taskbar-height);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.desktop__windows > * {
+  pointer-events: auto;
+}
