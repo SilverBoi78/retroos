@@ -1,0 +1,149 @@
+.filemanager {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  outline: none;
+}
+
+.filemanager__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.filemanager__toolbar-btn {
+  height: 22px;
+  padding: 0 8px;
+  font-family: var(--font-system);
+  font-size: 11px;
+  background: var(--color-button-face);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-button);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filemanager__toolbar-btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.filemanager__toolbar-btn:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+
+.filemanager__addressbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.filemanager__addressbar-label {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.filemanager__addressbar-path {
+  flex: 1;
+  height: 20px;
+  padding: 2px 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-field);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 16px;
+}
+
+.filemanager__content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--color-input-bg);
+  padding: 4px;
+}
+
+.filemanager__empty {
+  padding: 16px;
+  color: var(--color-text-disabled);
+  font-size: 11px;
+  text-align: center;
+  font-style: italic;
+}
+
+.filemanager__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-text-primary);
+}
+
+.filemanager__item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.filemanager__item--selected {
+  background: var(--color-highlight);
+  color: var(--color-highlight-text, #ffffff);
+}
+
+.filemanager__item--selected:hover {
+  background: var(--color-highlight);
+}
+
+.filemanager__item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.filemanager__item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.filemanager__item-size {
+  font-size: 10px;
+  color: var(--color-text-disabled);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.filemanager__item--selected .filemanager__item-size {
+  color: var(--color-highlight-text, #ffffff);
+  opacity: 0.7;
+}
+
+.filemanager__rename-input {
+  flex: 1;
+  height: 18px;
+  padding: 1px 3px;
+  font-family: var(--font-system);
+  font-size: 11px;
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-field);
+  border: none;
+  outline: none;
+}
+
+.filemanager__statusbar {
+  padding: 3px 6px;
+  font-size: 10px;
+  color: var(--color-text-primary);
+  border-top: 1px solid var(--color-surface-dark);
+  background: var(--color-surface);
+}

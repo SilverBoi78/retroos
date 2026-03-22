@@ -39,6 +39,7 @@ function windowReducer(state, action) {
         minimized: false,
         maximized: false,
         zIndex: state.nextZIndex,
+        appProps: action.appProps || null,
       }
 
       return {
@@ -124,6 +125,14 @@ function windowReducer(state, action) {
         ),
       }
 
+    case 'UPDATE_TITLE':
+      return {
+        ...state,
+        windows: state.windows.map(w =>
+          w.id === action.id ? { ...w, title: action.title } : w
+        ),
+      }
+
     default:
       return state
   }
@@ -132,7 +141,7 @@ function windowReducer(state, action) {
 export function WindowManagerProvider({ children }) {
   const [state, dispatch] = useReducer(windowReducer, initialState)
 
-  const openWindow = useCallback((appId) => dispatch({ type: 'OPEN_WINDOW', appId }), [])
+  const openWindow = useCallback((appId, appProps) => dispatch({ type: 'OPEN_WINDOW', appId, appProps }), [])
   const closeWindow = useCallback((id) => dispatch({ type: 'CLOSE_WINDOW', id }), [])
   const minimizeWindow = useCallback((id) => dispatch({ type: 'MINIMIZE_WINDOW', id }), [])
   const maximizeWindow = useCallback((id) => dispatch({ type: 'MAXIMIZE_WINDOW', id }), [])
@@ -140,6 +149,7 @@ export function WindowManagerProvider({ children }) {
   const focusWindow = useCallback((id) => dispatch({ type: 'FOCUS_WINDOW', id }), [])
   const updatePosition = useCallback((id, x, y) => dispatch({ type: 'UPDATE_POSITION', id, x, y }), [])
   const updateSize = useCallback((id, width, height) => dispatch({ type: 'UPDATE_SIZE', id, width, height }), [])
+  const updateWindowTitle = useCallback((id, title) => dispatch({ type: 'UPDATE_TITLE', id, title }), [])
 
   const value = {
     windows: state.windows,
@@ -151,6 +161,7 @@ export function WindowManagerProvider({ children }) {
     focusWindow,
     updatePosition,
     updateSize,
+    updateWindowTitle,
   }
 
   return (

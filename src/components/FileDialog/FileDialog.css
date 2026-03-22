@@ -1,0 +1,173 @@
+.file-dialog__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.file-dialog {
+  width: 380px;
+  background: var(--color-surface);
+  box-shadow: var(--border-window);
+  padding: 3px;
+}
+
+.file-dialog__title-bar {
+  display: flex;
+  align-items: center;
+  height: var(--title-bar-height);
+  padding: 2px 6px;
+  background: var(--color-title-active);
+  color: var(--color-title-text-active);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.file-dialog__body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.file-dialog__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.file-dialog__toolbar-btn {
+  height: 22px;
+  padding: 0 8px;
+  font-family: var(--font-system);
+  font-size: 11px;
+  background: var(--color-button-face);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-button);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.file-dialog__toolbar-btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.file-dialog__toolbar-btn:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+
+.file-dialog__path {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  margin-left: auto;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-dialog__list {
+  height: 160px;
+  overflow-y: auto;
+  background: var(--color-input-bg);
+  box-shadow: var(--border-field);
+  padding: 2px;
+}
+
+.file-dialog__empty {
+  padding: 8px;
+  color: var(--color-text-disabled);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.file-dialog__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-text-primary);
+}
+
+.file-dialog__item:hover {
+  background: var(--color-highlight);
+  color: var(--color-highlight-text, #ffffff);
+}
+
+.file-dialog__item--selected {
+  background: var(--color-highlight);
+  color: var(--color-highlight-text, #ffffff);
+}
+
+.file-dialog__item-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.file-dialog__item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-dialog__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-dialog__filename-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-dialog__label {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.file-dialog__input {
+  flex: 1;
+  height: 22px;
+  padding: 2px 4px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-field);
+  border: none;
+  outline: none;
+}
+
+.file-dialog__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.file-dialog__btn {
+  min-width: 70px;
+  height: 24px;
+  padding: 0 12px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-button-face);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-button);
+  cursor: pointer;
+}
+
+.file-dialog__btn:active {
+  box-shadow: var(--border-button-pressed);
+}

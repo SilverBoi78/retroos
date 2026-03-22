@@ -1,0 +1,120 @@
+.login-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--color-desktop-bg-pattern), var(--color-desktop-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-screen__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.login-screen__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-screen__logo-icon {
+  font-size: 64px;
+  color: var(--color-surface-white, #ffffff);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.login-screen__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-surface-white, #ffffff);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.login-screen__dialog {
+  width: 320px;
+  background: var(--color-surface);
+  box-shadow: var(--border-window);
+  padding: 3px;
+}
+
+.login-screen__dialog-title {
+  display: flex;
+  align-items: center;
+  height: var(--title-bar-height);
+  padding: 2px 6px;
+  background: var(--color-title-active);
+  color: var(--color-title-text-active);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.login-screen__form {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-screen__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-screen__label {
+  font-size: 11px;
+  color: var(--color-text-primary);
+}
+
+.login-screen__input {
+  height: 22px;
+  padding: 2px 4px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-field);
+  border: none;
+  outline: none;
+}
+
+.login-screen__error {
+  font-size: 11px;
+  color: #cc0000;
+  padding: 2px 0;
+}
+
+.login-screen__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.login-screen__btn {
+  min-width: 80px;
+  height: 24px;
+  padding: 0 12px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-button-face);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-button);
+  cursor: pointer;
+}
+
+.login-screen__btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.login-screen__version {
+  font-size: 10px;
+  color: var(--color-surface-white, #ffffff);
+  opacity: 0.6;
+  margin: 0;
+}

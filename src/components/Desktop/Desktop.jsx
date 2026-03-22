@@ -13,7 +13,7 @@ export default function Desktop() {
   return (
     <div className="desktop">
       <div className="desktop__icons">
-        {appRegistry.map((app) => (
+        {appRegistry.filter(app => !app.systemApp).map((app) => (
           <DesktopIcon
             key={app.id}
             appId={app.id}
@@ -31,7 +31,7 @@ export default function Desktop() {
           return (
             <Window key={win.id} windowData={win}>
               <ErrorBoundary>
-                <AppComponent windowId={win.id} />
+                <AppComponent windowId={win.id} appProps={win.appProps} />
               </ErrorBoundary>
             </Window>
           )

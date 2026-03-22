@@ -63,8 +63,6 @@ export default function Window({ windowData, children }) {
     }
   }, [isResizing, id, updateSize])
 
-  if (minimized) return null
-
   const style = maximized
     ? {
         position: 'fixed',
@@ -78,68 +76,62 @@ export default function Window({ windowData, children }) {
         width: size.width,
         height: size.height,
         zIndex,
+        ...(minimized ? { display: 'none' } : {}),
       }
-
-  const windowContent = (
-    <div
-      ref={nodeRef}
-      className={`window ${maximized ? 'window--maximized' : ''}`}
-      style={style}
-      onMouseDown={handleMouseDown}
-    >
-      <div className="window__title-bar" onDoubleClick={handleTitleBarDoubleClick}>
-        <div className="window__title-icon" />
-        <span className="window__title-text">{title}</span>
-        <div className="window__title-buttons">
-          <button
-            className="window__btn window__btn--minimize"
-            onClick={(e) => { e.stopPropagation(); minimizeWindow(id) }}
-          >
-            <span className="window__btn-icon">_</span>
-          </button>
-          <button
-            className="window__btn window__btn--maximize"
-            onClick={(e) => { e.stopPropagation(); handleMaximizeToggle() }}
-          >
-            <span className="window__btn-icon">{maximized ? '❐' : '□'}</span>
-          </button>
-          <button
-            className="window__btn window__btn--close"
-            onClick={(e) => { e.stopPropagation(); closeWindow(id) }}
-          >
-            <span className="window__btn-icon">✕</span>
-          </button>
-        </div>
-      </div>
-      <div className="window__body">
-        {children}
-      </div>
-      {!maximized && (
-        <div
-          className="window__resize-handle"
-          onMouseDown={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setIsResizing(true)
-          }}
-        />
-      )}
-    </div>
-  )
-
-  if (maximized) {
-    return windowContent
-  }
 
   return (
     <Draggable
       nodeRef={nodeRef}
       handle=".window__title-bar"
-      position={position}
+      position={maximized ? { x: 0, y: 0 } : position}
       onStop={handleDragStop}
       bounds="parent"
+      disabled={maximized || minimized}
     >
-      {windowContent}
+      <div
+        ref={nodeRef}
+        className={`window ${maximized ? 'window--maximized' : ''}`}
+        style={style}
+        onMouseDown={handleMouseDown}
+      >
+        <div className="window__title-bar" onDoubleClick={handleTitleBarDoubleClick}>
+          <div className="window__title-icon" />
+          <span className="window__title-text">{title}</span>
+          <div className="window__title-buttons">
+            <button
+              className="window__btn window__btn--minimize"
+              onClick={(e) => { e.stopPropagation(); minimizeWindow(id) }}
+            >
+              <span className="window__btn-icon">_</span>
+            </button>
+            <button
+              className="window__btn window__btn--maximize"
+              onClick={(e) => { e.stopPropagation(); handleMaximizeToggle() }}
+            >
+              <span className="window__btn-icon">{maximized ? '❐' : '□'}</span>
+            </button>
+            <button
+              className="window__btn window__btn--close"
+              onClick={(e) => { e.stopPropagation(); closeWindow(id) }}
+            >
+              <span className="window__btn-icon">✕</span>
+            </button>
+          </div>
+        </div>
+        <div className="window__body">
+          {children}
+        </div>
+        {!maximized && (
+          <div
+            className="window__resize-handle"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsResizing(true)
+            }}
+          />
+        )}
+      </div>
     </Draggable>
   )
 }

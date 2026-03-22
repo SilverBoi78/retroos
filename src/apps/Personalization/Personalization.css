@@ -1,0 +1,110 @@
+.personalization {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px;
+  overflow-y: auto;
+  background: var(--color-surface);
+}
+
+.personalization__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.personalization__section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.personalization__section-desc {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.personalization__themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.personalization__theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: var(--color-surface);
+  box-shadow: var(--border-raised);
+  cursor: pointer;
+  position: relative;
+  width: 120px;
+}
+
+.personalization__theme:hover {
+  background: var(--color-surface-light);
+}
+
+.personalization__theme--active {
+  box-shadow: var(--border-button-pressed);
+  background: var(--color-surface-light);
+}
+
+.personalization__theme-name {
+  font-size: 10px;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.personalization__theme-check {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  color: var(--color-highlight);
+  font-weight: 700;
+}
+
+/* Mini preview */
+.personalization__preview {
+  width: 100px;
+  height: 68px;
+  border: 1px solid var(--color-surface-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+.personalization__preview-window {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  width: 56px;
+  height: 38px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.personalization__preview-titlebar {
+  height: 8px;
+}
+
+.personalization__preview-body {
+  height: calc(100% - 8px);
+  background: #ffffff;
+  opacity: 0.9;
+}
+
+.personalization__preview-taskbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
