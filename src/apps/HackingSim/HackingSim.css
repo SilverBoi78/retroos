@@ -1,0 +1,106 @@
+.hackingsim {
+  width: 100%;
+  height: 100%;
+  background: #0a0a0a;
+  overflow: auto;
+}
+
+.hackingsim-terminal {
+  width: 100%;
+  height: 100%;
+}
+
+.hackingsim-levels {
+  padding: 16px;
+  text-align: center;
+}
+
+.hackingsim-levels__title {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: bold;
+  color: #00ff00;
+  letter-spacing: 4px;
+  margin-bottom: 4px;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+.hackingsim-levels__subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.hackingsim-levels__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.hackingsim-levels__card {
+  background: #111;
+  border: 1px solid #333;
+  padding: 10px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s;
+}
+
+.hackingsim-levels__card:hover:not(.locked) {
+  border-color: #00ff00;
+}
+
+.hackingsim-levels__card.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hackingsim-levels__card.completed {
+  border-color: #00aa00;
+}
+
+.hackingsim-levels__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hackingsim-levels__card-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #666;
+}
+
+.hackingsim-levels__card-type {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.hackingsim-levels__card-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #cccccc;
+  font-weight: bold;
+}
+
+.hackingsim-levels__card-check {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #00ff00;
+  letter-spacing: 1px;
+}
+
+.hackingsim-levels__card-lock {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #666;
+  letter-spacing: 1px;
+}

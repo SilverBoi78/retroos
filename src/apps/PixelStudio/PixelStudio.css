@@ -1,0 +1,246 @@
+.pixelstudio {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+}
+
+.pixelstudio__menu-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.pixelstudio__menu-btn {
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  padding: 2px 8px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.pixelstudio__menu-btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.pixelstudio__zoom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.pixelstudio__zoom-label {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  min-width: 28px;
+  text-align: center;
+}
+
+.pixelstudio__workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.pixelstudio-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border-right: 1px solid var(--color-surface-dark);
+  background: var(--color-surface);
+}
+
+.pixelstudio-toolbar__btn {
+  width: 26px;
+  height: 26px;
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pixelstudio-toolbar__btn.active {
+  box-shadow: var(--border-button-pressed);
+  background: var(--color-surface-light);
+}
+
+.pixelstudio-toolbar__btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.pixelstudio-toolbar__divider {
+  height: 1px;
+  background: var(--color-surface-dark);
+  margin: 2px 0;
+}
+
+.pixelstudio__canvas-area {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8px;
+  background: var(--color-surface-dark);
+}
+
+.pixelstudio-canvas-wrapper {
+  display: inline-block;
+  box-shadow: var(--border-sunken);
+}
+
+.pixelstudio-canvas {
+  display: block;
+  cursor: crosshair;
+  image-rendering: pixelated;
+}
+
+.pixelstudio-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  border-left: 1px solid var(--color-surface-dark);
+  background: var(--color-surface);
+  width: 80px;
+}
+
+.pixelstudio-palette__current {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.pixelstudio-palette__swatch-large {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--color-text-primary);
+}
+
+.pixelstudio-palette__picker {
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--color-surface-dark);
+  cursor: pointer;
+}
+
+.pixelstudio-palette__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+}
+
+.pixelstudio-palette__swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-surface-dark);
+  cursor: pointer;
+  padding: 0;
+}
+
+.pixelstudio-palette__swatch.active {
+  border: 2px solid var(--color-text-primary);
+}
+
+.pixelstudio__status {
+  padding: 2px 6px;
+  border-top: 1px solid var(--color-surface-dark);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.pixelstudio__dialog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.pixelstudio__dialog {
+  background: var(--color-surface);
+  box-shadow: var(--border-raised);
+  padding: 12px;
+  min-width: 200px;
+}
+
+.pixelstudio__dialog-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.pixelstudio__dialog-body {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.pixelstudio__dialog-btn {
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  padding: 4px 12px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+}
+
+.pixelstudio__dialog-btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.pixelstudio__dialog-cancel {
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  padding: 4px 12px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+}
+
+.pixelstudio__dialog-input {
+  flex: 1;
+  padding: 3px 4px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  border: none;
+  box-shadow: var(--border-field);
+}
+
+.pixelstudio__dialog-ext {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.pixelstudio__dialog-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}

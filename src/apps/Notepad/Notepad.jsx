@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useWindowManager } from '../../context/WindowManagerContext'
 import { useFileSystem } from '../../context/FileSystemContext'
+import { useNotification } from '../../context/NotificationContext'
 import FileDialog from '../../components/FileDialog/FileDialog'
 import './Notepad.css'
 
@@ -13,6 +14,7 @@ export default function Notepad({ windowId, appProps }) {
   const [dialog, setDialog] = useState(null)
   const { closeWindow, updateWindowTitle } = useWindowManager()
   const { readFile, writeFile } = useFileSystem()
+  const { notify } = useNotification()
   const menuRef = useRef(null)
   const textareaRef = useRef(null)
   const hasLoadedFile = useRef(false)
@@ -63,6 +65,7 @@ export default function Notepad({ windowId, appProps }) {
     if (filePath) {
       writeFile(filePath, content)
       setSavedContent(content)
+      notify(`Saved ${fileName}`, { type: 'success' })
     } else {
       setDialog('save')
     }
@@ -85,6 +88,7 @@ export default function Notepad({ windowId, appProps }) {
     setFileName(name)
     updateWindowTitle(windowId, `${name} - Notepad`)
     setDialog(null)
+    notify(`Saved ${name}`, { type: 'success' })
   }
 
   function handleOpenConfirm(path, name) {

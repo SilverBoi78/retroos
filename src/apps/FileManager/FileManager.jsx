@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useFileSystem } from '../../context/FileSystemContext'
 import { useWindowManager } from '../../context/WindowManagerContext'
+import { useContextMenu } from '../../context/ContextMenuContext'
 import './FileManager.css'
 
 export default function FileManager({ windowId }) {
   const { readDir, createDir, deleteNode, rename } = useFileSystem()
   const { openWindow } = useWindowManager()
+  const { showContextMenu } = useContextMenu()
   const [currentPath, setCurrentPath] = useState('/')
   const [entries, setEntries] = useState([])
   const [selected, setSelected] = useState(null)
@@ -101,6 +103,32 @@ export default function FileManager({ windowId }) {
     }
   }
 
+  const handleItemContextMenu = useCallback((e, entry) => {
+    e.stopPropagation()
+    setSelected(entry.name)
+    const fullPath = currentPath === '/' ? `/${entry.name}` : `${currentPath}/${entry.name}`
+    const items = [
+      { label: 'Open', action: () => handleItemDoubleClick(entry) },
+      { type: 'divider' },
+      { label: 'Rename', action: () => { setRenaming(entry.name); setRenameValue(entry.name) } },
+      { label: 'Delete', action: () => {
+        const label = entry.type === 'directory' ? 'folder' : 'file'
+        if (confirm(`Delete ${label} "${entry.name}"?`)) {
+          deleteNode(fullPath)
+          setSelected(null)
+        }
+      }},
+    ]
+    showContextMenu(e, items)
+  }, [currentPath, showContextMenu, deleteNode])
+
+  const handleEmptyContextMenu = useCallback((e) => {
+    if (e.target.closest('.filemanager__item')) return
+    showContextMenu(e, [
+      { label: 'New Folder', action: handleNewFolder },
+    ])
+  }, [showContextMenu])
+
   const pathParts = currentPath === '/' ? [''] : currentPath.split('/')
 
   return (
@@ -127,7 +155,7 @@ export default function FileManager({ windowId }) {
         </div>
       </div>
 
-      <div className="filemanager__content" onClick={() => { setSelected(null); setRenaming(null) }}>
+      <div className="filemanager__content" onClick={() => { setSelected(null); setRenaming(null) }} onContextMenu={handleEmptyContextMenu}>
         {entries.length === 0 && (
           <div className="filemanager__empty">This folder is empty</div>
         )}
@@ -137,6 +165,7 @@ export default function FileManager({ windowId }) {
             className={`filemanager__item ${selected === entry.name ? 'filemanager__item--selected' : ''}`}
             onClick={(e) => { e.stopPropagation(); handleItemClick(entry) }}
             onDoubleClick={() => handleItemDoubleClick(entry)}
+            onContextMenu={(e) => handleItemContextMenu(e, entry)}
           >
             <span className="filemanager__item-icon">
               {entry.type === 'directory' ? '📁' : '📄'}

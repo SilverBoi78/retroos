@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 import Draggable from 'react-draggable'
 import { useWindowManager } from '../../context/WindowManagerContext'
 import './Window.css'
@@ -17,8 +17,16 @@ export default function Window({ windowData, children }) {
   const nodeRef = useRef(null)
   const resizeRef = useRef(null)
   const [isResizing, setIsResizing] = useState(false)
+  const [isOpening, setIsOpening] = useState(true)
 
-  const { id, title, position, size, minimized, maximized, zIndex } = windowData
+  const { id, title, position, size, minimized, maximized, zIndex, closing } = windowData
+
+  useEffect(() => {
+    if (isOpening) {
+      const timer = setTimeout(() => setIsOpening(false), 150)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpening])
 
   const handleMouseDown = useCallback(() => {
     focusWindow(id)
@@ -90,7 +98,7 @@ export default function Window({ windowData, children }) {
     >
       <div
         ref={nodeRef}
-        className={`window ${maximized ? 'window--maximized' : ''}`}
+        className={`window${maximized ? ' window--maximized' : ''}${isOpening ? ' window--opening' : ''}${closing ? ' window--closing' : ''}`}
         style={style}
         onMouseDown={handleMouseDown}
       >

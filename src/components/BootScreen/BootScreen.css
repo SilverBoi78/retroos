@@ -1,0 +1,86 @@
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  font-family: 'Courier New', monospace;
+  color: #33ff33;
+  transition: opacity 0.5s ease-out;
+}
+
+.boot-screen--fading {
+  opacity: 0;
+}
+
+.boot-post {
+  width: 500px;
+  max-width: 90vw;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.boot-post__line {
+  opacity: 0;
+  animation: postLineIn 0.1s forwards;
+}
+
+.boot-logo {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.boot-logo--visible {
+  display: flex;
+}
+
+.boot-logo__title {
+  font-size: 36px;
+  font-weight: bold;
+  color: #33ff33;
+  text-shadow: 0 0 10px #33ff3388, 0 0 20px #33ff3344;
+  letter-spacing: 6px;
+}
+
+.boot-logo__version {
+  font-size: 12px;
+  color: #22aa22;
+  letter-spacing: 3px;
+}
+
+.boot-progress {
+  margin-top: 24px;
+  width: 300px;
+  max-width: 80vw;
+}
+
+.boot-progress__bar {
+  height: 4px;
+  background: #111;
+  border: 1px solid #33ff33;
+  overflow: hidden;
+}
+
+.boot-progress__fill {
+  height: 100%;
+  background: #33ff33;
+  width: 0%;
+  transition: width 0.3s linear;
+}
+
+.boot-progress__text {
+  font-size: 10px;
+  color: #22aa22;
+  text-align: center;
+  margin-top: 6px;
+}
+
+@keyframes postLineIn {
+  to { opacity: 1; }
+}

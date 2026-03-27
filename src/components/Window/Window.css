@@ -95,6 +95,38 @@
   z-index: 10;
 }
 
+/* Window open/close animations */
+@keyframes windowOpen {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes windowClose {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.window--opening {
+  animation: windowOpen 150ms ease-out forwards;
+}
+
+.window--closing {
+  animation: windowClose 150ms ease-in forwards;
+  pointer-events: none;
+}
+
 .window__resize-handle::before {
   content: '';
   position: absolute;

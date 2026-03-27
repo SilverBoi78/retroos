@@ -15,6 +15,14 @@ const DEFAULT_FS = {
       type: 'directory',
       children: {},
     },
+    'Games': {
+      type: 'directory',
+      children: {},
+    },
+    'Music': {
+      type: 'directory',
+      children: {},
+    },
   },
 }
 

@@ -1,17 +1,32 @@
+import { useCallback } from 'react'
 import { useWindowManager } from '../../context/WindowManagerContext'
+import { useContextMenu } from '../../context/ContextMenuContext'
 import { getApp } from '../../registry/appRegistry'
 import appRegistry from '../../registry/appRegistry'
 import DesktopIcon from '../DesktopIcon/DesktopIcon'
 import Window from '../Window/Window'
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary'
 import Taskbar from '../Taskbar/Taskbar'
+import NotificationArea from '../NotificationArea/NotificationArea'
+import ContextMenu from '../ContextMenu/ContextMenu'
 import './Desktop.css'
 
 export default function Desktop() {
-  const { windows } = useWindowManager()
+  const { windows, openWindow } = useWindowManager()
+  const { showContextMenu } = useContextMenu()
+
+  const handleDesktopContextMenu = useCallback((e) => {
+    if (e.target.closest('.window') || e.target.closest('.taskbar') || e.target.closest('.desktop-icon')) return
+    showContextMenu(e, [
+      { label: 'Open Terminal', action: () => openWindow('terminal') },
+      { label: 'Open File Manager', action: () => openWindow('filemanager') },
+      { type: 'divider' },
+      { label: 'Personalization', action: () => openWindow('personalization') },
+    ])
+  }, [showContextMenu, openWindow])
 
   return (
-    <div className="desktop">
+    <div className="desktop" onContextMenu={handleDesktopContextMenu}>
       <div className="desktop__icons">
         {appRegistry.filter(app => !app.systemApp).map((app) => (
           <DesktopIcon
@@ -38,6 +53,8 @@ export default function Desktop() {
         })}
       </div>
 
+      <ContextMenu />
+      <NotificationArea />
       <Taskbar />
     </div>
   )

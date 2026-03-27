@@ -1,0 +1,229 @@
+.chiptune {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+}
+
+.chiptune__menu-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--color-surface-dark);
+}
+
+.chiptune__menu-btn {
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  padding: 2px 8px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.chiptune__menu-btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.chiptune__workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.chiptune__grid-area {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Transport */
+.chiptune-transport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.chiptune-transport__btn {
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  padding: 2px 8px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.chiptune-transport__btn.active {
+  box-shadow: var(--border-button-pressed);
+  background: var(--color-surface-light);
+}
+
+.chiptune-transport__bpm {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.chiptune-transport__label {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.chiptune-transport__input {
+  width: 42px;
+  padding: 1px 3px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  border: none;
+  box-shadow: var(--border-field);
+  text-align: center;
+}
+
+/* Tracker Grid */
+.chiptune-grid-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: #1a1a2a;
+}
+
+.chiptune-grid {
+  display: grid;
+  gap: 0;
+  min-width: max-content;
+}
+
+.chiptune-grid__label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #222233;
+  color: #aaaacc;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #1a1a2a;
+  white-space: nowrap;
+}
+
+.chiptune-grid__label.sharp {
+  background: #1a1a2a;
+  color: #777799;
+}
+
+.chiptune-grid__cell {
+  border: 1px solid #222;
+  background: #111122;
+  cursor: pointer;
+  min-width: 20px;
+  min-height: 14px;
+}
+
+.chiptune-grid__cell.sharp-row {
+  background: #0e0e1a;
+}
+
+.chiptune-grid__cell.beat {
+  border-left: 1px solid #444;
+}
+
+.chiptune-grid__cell.active {
+  background: #4488ff;
+  border-color: #5599ff;
+}
+
+.chiptune-grid__cell.playhead {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.chiptune-grid__cell.playhead.active {
+  background: #66aaff;
+}
+
+.chiptune-grid__cell:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Instruments */
+.chiptune-instruments {
+  width: 140px;
+  border-left: 1px solid var(--color-surface-dark);
+  background: var(--color-surface);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.chiptune-instruments__tracks {
+  display: flex;
+  gap: 3px;
+}
+
+.chiptune-instruments__track-btn {
+  flex: 1;
+  padding: 3px;
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.chiptune-instruments__track-btn.active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.chiptune-instruments__section {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chiptune-instruments__label {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.chiptune-instruments__waveforms {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chiptune-instruments__wave-btn {
+  text-align: left;
+  background: var(--color-button-face);
+  box-shadow: var(--border-button);
+  border: none;
+  padding: 2px 6px;
+  font-family: var(--font-system);
+  font-size: 10px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.chiptune-instruments__wave-btn.active {
+  box-shadow: var(--border-button-pressed);
+  background: var(--color-surface-light);
+}
+
+.chiptune-instruments__slider {
+  width: 100%;
+}

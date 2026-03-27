@@ -1,0 +1,69 @@
+.notification-area {
+  position: fixed;
+  bottom: calc(var(--taskbar-height) + 8px);
+  right: 8px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  min-width: 200px;
+  max-width: 320px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  box-shadow: var(--border-raised);
+  border-radius: var(--border-radius);
+  pointer-events: auto;
+  animation: notification-slide-in 0.2s ease-out;
+}
+
+.notification--success {
+  border-left: 3px solid #4a8a4a;
+}
+
+.notification--error {
+  border-left: 3px solid #8a4a4a;
+}
+
+.notification--info {
+  border-left: 3px solid var(--color-highlight);
+}
+
+.notification__message {
+  flex: 1;
+  word-break: break-word;
+}
+
+.notification__close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.notification__close:hover {
+  color: var(--color-text-primary);
+}
+
+@keyframes notification-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

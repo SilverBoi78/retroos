@@ -1,0 +1,102 @@
+.arcade-cabinet {
+  width: 100%;
+  height: 100%;
+  background: #0a0a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+}
+
+.arcade-menu {
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.arcade-menu__title {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffcc44;
+  letter-spacing: 8px;
+  margin-bottom: 4px;
+  text-shadow: 2px 2px 0 #aa6600;
+}
+
+.arcade-menu__subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #888888;
+  margin-bottom: 16px;
+}
+
+.arcade-menu__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.arcade-menu__card {
+  background: #1a1a2a;
+  border: 1px solid #333;
+  padding: 12px 8px;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s;
+}
+
+.arcade-menu__card:hover {
+  border-color: #ffcc44;
+}
+
+.arcade-menu__card-icon {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arcade-menu__card-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.arcade-menu__card-desc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #888888;
+}
+
+.arcade-menu__card-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #ffcc44;
+  margin-top: 2px;
+}
+
+.arcade-back-btn {
+  background: #1a1a2a;
+  border: 1px solid #444;
+  color: #cccccc;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 12px;
+  cursor: pointer;
+  margin: 4px;
+}
+
+.arcade-back-btn:hover {
+  border-color: #ffcc44;
+  color: #ffcc44;
+}

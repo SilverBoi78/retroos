@@ -49,6 +49,14 @@ function windowReducer(state, action) {
       }
     }
 
+    case 'CLOSE_WINDOW_START':
+      return {
+        ...state,
+        windows: state.windows.map(w =>
+          w.id === action.id ? { ...w, closing: true } : w
+        ),
+      }
+
     case 'CLOSE_WINDOW':
       return {
         ...state,
@@ -142,7 +150,10 @@ export function WindowManagerProvider({ children }) {
   const [state, dispatch] = useReducer(windowReducer, initialState)
 
   const openWindow = useCallback((appId, appProps) => dispatch({ type: 'OPEN_WINDOW', appId, appProps }), [])
-  const closeWindow = useCallback((id) => dispatch({ type: 'CLOSE_WINDOW', id }), [])
+  const closeWindow = useCallback((id) => {
+    dispatch({ type: 'CLOSE_WINDOW_START', id })
+    setTimeout(() => dispatch({ type: 'CLOSE_WINDOW', id }), 150)
+  }, [])
   const minimizeWindow = useCallback((id) => dispatch({ type: 'MINIMIZE_WINDOW', id }), [])
   const maximizeWindow = useCallback((id) => dispatch({ type: 'MAXIMIZE_WINDOW', id }), [])
   const restoreWindow = useCallback((id) => dispatch({ type: 'RESTORE_WINDOW', id }), [])
