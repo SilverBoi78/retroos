@@ -6,102 +6,7 @@ RetroOS is a browser-based desktop environment that serves as a platform for rel
 
 The visual identity is a custom retro desktop inspired by Linux desktop environments (GTK themes, beveled borders, teal/purple palette). It is deliberately **not** a Windows clone.
 
-**Target deployment:** Hosted on a rented Linux server, accessible via web browser. See the [Hosting & Deployment Notes](#hosting--deployment-notes) section for what needs to change before going live.
-
----
-
-## Current Status
-
-### What's Working
-
-**Desktop Shell**
-- Full-viewport themed desktop with icon grid
-- Draggable, resizable windows (react-draggable) with minimize/maximize/close
-- Z-index stacking — click to focus, title bar double-click to maximize
-- Taskbar with app buttons (click to focus/minimize/restore), Start Menu, live clock
-- Error boundary per app — a crashed app shows a retro error dialog without taking down the desktop
-- Window state is preserved across minimize/maximize (no component remounting)
-
-**Universal Authentication**
-- Login screen gates the entire OS — users must log in to access their desktop
-- `AuthContext` provides `{ user, isAuthenticated, login, logout }` to all components
-- Start menu shows the logged-in username and a "Log Off" option
-- Window state resets on logout (fresh session each login)
-- **Currently a frontend-only mock** — any username/password is accepted, session stored in localStorage. Must be replaced with real auth before production (see [What's Next](#whats-next))
-
-**Theme System**
-- GTK-inspired theme engine: each theme is a JS config object mapping to CSS custom properties
-- `ThemeContext` applies themes at runtime by setting CSS variables on `:root`
-- All component CSS uses `var(--color-*)` — zero hardcoded colors anywhere
-- 3 preset themes:
-  - **RetroOS Classic** — warm gray chrome, purple title bars, teal desktop, beveled borders
-  - **Arctic** — dark navy/gray, flat borders, cyan/blue accents
-  - **Olive** — earthy green tones, beveled borders, neutral palette
-- Themes control: colors, fonts, font sizes, border style (beveled vs flat), border radius, taskbar height, title bar height, icon size
-- Theme choice persisted in localStorage (`retroos-theme`)
-- Supports two border rendering modes: 4-layer inset box-shadows for "beveled" (Classic/Olive) and single-pixel borders for "flat" (Arctic)
-
-**Personalization App**
-- Accessible from the Start Menu under system utilities (below a divider, separate from user apps)
-- Theme switcher with mini desktop preview thumbnails for each theme
-- System apps (`systemApp: true` in registry) don't appear as desktop icons — only in Start Menu
-- Designed to be extensible: future customization options (wallpapers, fonts, sounds, icon packs) can be added as new sections in this app
-
-**Virtual File System**
-- In-memory directory tree with files and folders, persisted to localStorage (`retroos-filesystem`)
-- `FileSystemContext` provides: `readDir`, `readFile`, `writeFile`, `createDir`, `deleteNode`, `rename`, `exists`, `getNodeType`
-- Default directories created on first load: `/Documents`, `/Desktop`, `/Pictures`
-- `/Games` directory created automatically when the first game is saved
-- Reusable `FileDialog` component (Save As / Open) available to any app — used by Notepad
-
-**Desktop Polish**
-- Window open/close animations (CSS scale+fade, 150ms)
-- Boot screen with POST text sequence, loading bar, and RetroOS logo (session-based, shows once per browser session)
-- Right-click context menus on Desktop (Open Terminal, File Manager, Personalization), Desktop Icons (Open), and File Manager items (Open, Rename, Delete) + empty area (New Folder)
-- Notification toast system — bottom-right popups with auto-dismiss, supports info/success/error types
-- Notifications wired into: Notepad (file save), Pixel Studio (file save), Minesweeper (win/loss), Arcade Cabinet (game over + score), Hacking Simulator (level complete)
-
-**Apps**
-
-| App | Description | Key Details |
-|-----|-------------|-------------|
-| **Calculator** | Full arithmetic calculator | Chained operations, keyboard shortcuts, single instance |
-| **Notepad** | Text editor | File > New/Open/Save/Save As, Ctrl+S/Ctrl+O/Ctrl+Shift+S, integrates with virtual file system, window title shows filename, save notifications |
-| **File Manager** | File/folder browser | Navigate directories, create folders, rename (F2), delete (Del), double-click files to open in Notepad, address bar, status bar, right-click context menus |
-| **Realms of Adventure** | AI text adventure game | See dedicated section below |
-| **Personalization** | Theme switcher (system app) | Mini previews, instant apply, extensible for future options |
-| **Terminal** | Retro command-line terminal | Commands: ls, cd, cat, mkdir, rm, touch, echo, pwd, whoami, date, clear, help. Operates on virtual file system, command history (up/down arrows), multi-instance |
-| **Minesweeper** | Classic minesweeper | 3 difficulties (Beginner/Intermediate/Expert), mines placed after first click, flood-fill reveal, flag toggle, timer, mine counter, smiley reset, win/loss notifications |
-| **Arcade Cabinet** | Collection of 4 mini-games | Breakout, Space Shooter, Pong, Runner. Canvas-rendered with requestAnimationFrame game loop. Per-game high scores saved to `/Games/ArcadeHighScores.json`. Game selection menu with descriptions |
-| **Hacking Simulator** | Terminal puzzle game | 8 levels across 4 types: Cipher (ROT13/base64), Password (clue-based), Filesystem (navigate fake FS), Exploit (scan/connect/exploit/extract). Progress saved to `/Games/HackingSim.json`. Level completion notifications |
-| **Pixel Studio** | Pixel art editor | Canvas sizes: 16x16, 32x32, 64x64. Tools: pencil, eraser, fill (flood), line (Bresenham), rectangle. 32 preset colors + custom color picker. Undo/redo (50 deep). Exports PNG to `/Pictures/`. Save notifications |
-| **Chiptune Maker** | Retro music sequencer | 4 tracks, 32 steps, tracker-grid interface. Waveforms: square, triangle, sawtooth, sine. BPM control, loop toggle. Web Audio scheduled playback with ADSR envelopes. Save/load songs as JSON to `/Music/` |
-| **Radio** | Ambient vibe player | 6 stations (Lo-Fi Rain, Space Drift, Retro Static, Forest Night, Deep Focus, Chiptune Beats). Play/pause, prev/next, volume. CSS animated EQ bars. Placeholder Web Audio tones (structured for real audio swap later) |
-
-### Realms of Adventure — Details
-
-A text-based RPG where a local AI (Ollama with llama3.2) acts as Game Master.
-
-**Gameplay:**
-- 4 realms: Fantasy, Cyberpunk, Horror, Sci-Fi — each has a unique system prompt with setting-specific tone and world
-- 3 response detail levels: Brief (1 paragraph), Standard (2 paragraphs), Detailed (2-3 paragraphs)
-- Free-response input — no multiple choice, the player types whatever they want to do
-- ~10-15 turns per adventure with pacing hints injected into the AI context
-- Game end detection: AI includes "THE END" in its final response (only triggers after turn 10 to prevent premature endings)
-
-**Saving:**
-- Transcript is saved to the virtual file system in real time — the `.txt` file in `/Games/` is updated after every player message and every AI response
-- If the player quits mid-game, the transcript up to that point is already saved (marked "In Progress")
-- Completed games are marked "Complete" with a footer
-- Files named by realm and timestamp: e.g., `Fantasy_2026-03-22_14-30.txt`
-- Past adventures viewable inside the app (Past Adventures screen) or by browsing `/Games/` in File Manager and opening in Notepad
-
-**AI Integration:**
-- Calls Ollama locally at `http://localhost:11434/api/chat`
-- Model: `llama3.2` (hardcoded in `src/apps/RealmsOfAdventure/useOllama.js`)
-- Non-streaming mode (`stream: false`) — full response returned at once
-- Full conversation history sent on every call so the AI maintains context
-- A hidden kickoff message ("Begin the adventure.") is sent on game start so the AI immediately narrates the opening scene — this message is filtered from the UI and saved transcripts
+**Target deployment:** Hosted on a rented Linux server, accessible via web browser.
 
 ---
 
@@ -122,91 +27,131 @@ A text-based RPG where a local AI (Ollama with llama3.2) acts as Game Master.
 
 ---
 
+## Current Status
+
+### Desktop Shell
+- Full-viewport themed desktop with icon grid
+- Draggable, resizable windows with minimize/maximize/close, z-index stacking, title bar double-click to maximize
+- Taskbar with app buttons (click to focus/minimize/restore), Start Menu, live clock
+- Error boundary per app — crashed apps show a retro error dialog without taking down the desktop
+- Window state preserved across minimize/maximize (no component remounting)
+- Window open/close animations (CSS scale+fade, 150ms)
+- Boot screen with POST text, loading bar, and logo (once per browser session)
+- Right-click context menus on Desktop, Desktop Icons, and File Manager items
+- Notification toast system — bottom-right popups with auto-dismiss (info/success/error)
+
+### Authentication
+- Login screen gates the entire OS
+- `AuthContext` provides `{ user, isAuthenticated, login, logout }`
+- Start menu shows username and "Log Off" option
+- **Currently a frontend-only mock** — any username/password accepted, session in localStorage
+
+### Theme System
+- GTK-inspired engine: each theme is a JS config mapping to CSS custom properties on `:root`
+- All component CSS uses `var(--color-*)` — zero hardcoded colors
+- 3 preset themes: **RetroOS Classic** (warm gray, purple title bars, beveled), **Arctic** (dark navy, flat borders, cyan accents), **Olive** (earthy green, beveled)
+- Themes control: colors, fonts, font sizes, border style (beveled vs flat), border radius, taskbar/title bar height, icon size
+- Theme choice persisted in localStorage
+
+### Virtual File System
+- In-memory directory tree persisted to localStorage
+- `FileSystemContext` provides: `readDir`, `readFile`, `writeFile`, `createDir`, `deleteNode`, `rename`, `exists`, `getNodeType`
+- Default directories: `/Documents`, `/Desktop`, `/Pictures`, `/Games` (auto-created on first game save)
+- Reusable `FileDialog` component (Save As / Open) available to any app
+
+### Apps (12 total)
+
+| App | Description |
+|-----|-------------|
+| **Calculator** | Chained operations, keyboard shortcuts, single instance |
+| **Notepad** | File > New/Open/Save/Save As, Ctrl+S/O/Shift+S, integrates with virtual file system |
+| **File Manager** | Navigate directories, create/rename/delete, double-click opens in Notepad, context menus |
+| **Personalization** | Theme switcher with mini desktop previews (system app — Start Menu only) |
+| **Terminal** | Commands: ls, cd, cat, mkdir, rm, touch, echo, pwd, whoami, date, clear, help. Command history |
+| **Minesweeper** | 3 difficulties, flood-fill reveal, flag toggle, timer, mine counter, win/loss notifications |
+| **Arcade Cabinet** | 4 mini-games (Breakout, Space Shooter, Pong, Runner). Canvas-rendered, per-game high scores |
+| **Hacking Simulator** | 8 levels across 4 types (Cipher, Password, Filesystem, Exploit). Progress saved to file system |
+| **Pixel Studio** | Canvas sizes 16/32/64. Tools: pencil, eraser, fill, line, rectangle. 32 colors + custom picker. Undo/redo. Exports PNG |
+| **Chiptune Maker** | 4 tracks, 32 steps, tracker-grid. Waveforms: square/triangle/sawtooth/sine. BPM, loop, ADSR. Save/load JSON |
+| **Radio** | 6 ambient stations. Play/pause, volume, animated EQ bars. Placeholder Web Audio tones |
+| **Realms of Adventure** | AI text RPG (see below) |
+
+### Realms of Adventure
+
+A text-based RPG where a local AI (Ollama / llama3.2) acts as Game Master.
+
+- 4 realms (Fantasy, Cyberpunk, Horror, Sci-Fi) each with a unique system prompt
+- 3 detail levels: Brief, Standard, Detailed
+- Free-response input — player types whatever they want
+- ~10-15 turns per adventure; game end detected via "THE END" after turn 10
+- Transcript saved to `/Games/` in real time (updates after every message)
+- Past adventures viewable in-app or via File Manager + Notepad
+- Calls Ollama at `http://localhost:11434/api/chat` (non-streaming, full conversation history sent each call)
+
+---
+
 ## Architecture
 
 ```
 src/
-├── main.jsx                    Entry point (imports CSS, renders App)
+├── main.jsx                    Entry point
 ├── App.jsx                     Provider tree: Theme → Auth → [Boot → Login → FS → WM → Notifications → ContextMenu → Desktop]
-├── styles/
-│   ├── reset.css               Browser reset
-│   ├── variables.css           CSS custom property fallbacks (used if ThemeContext fails)
-│   └── global.css              Body styles, scrollbars, selection highlight
-├── themes/
-│   ├── index.js                Theme registry: getTheme(id), getThemeList()
-│   ├── retroClassic.js         Default theme config
-│   ├── arctic.js               Dark flat theme config
-│   └── olive.js                Earthy beveled theme config
+├── styles/                     reset.css, variables.css (fallbacks), global.css
+├── themes/                     index.js (registry), retroClassic.js, arctic.js, olive.js
 ├── context/
 │   ├── AuthContext.jsx          { user, isAuthenticated, login, logout }
-│   ├── FileSystemContext.jsx    Wraps fileSystem.js, triggers re-renders on changes
-│   ├── ThemeContext.jsx         Applies theme CSS vars to :root, persists to localStorage
-│   ├── WindowManagerContext.jsx useReducer: open/close/minimize/maximize/focus/resize/updateTitle + close animations
-│   ├── NotificationContext.jsx  notify(message, options?), dismiss(id), auto-dismiss timer
+│   ├── FileSystemContext.jsx    Wraps fileSystem.js, triggers re-renders
+│   ├── ThemeContext.jsx         Applies CSS vars to :root, persists to localStorage
+│   ├── WindowManagerContext.jsx useReducer: open/close/minimize/maximize/focus/resize/updateTitle
+│   ├── NotificationContext.jsx  notify(message, options?), dismiss(id), auto-dismiss
 │   └── ContextMenuContext.jsx   showContextMenu(event, items[]), hideContextMenu()
-├── services/
-│   └── fileSystem.js           Virtual FS engine: tree in memory, serialized to localStorage
+├── services/fileSystem.js      Virtual FS engine (tree in memory → localStorage)
 ├── registry/
-│   ├── appRegistry.js          App definitions array + getApp(id) lookup (12 apps)
-│   └── appIcons.jsx            SVG icons keyed by app id (12 icons)
+│   ├── appRegistry.js          App definitions array + getApp(id)
+│   └── appIcons.jsx            SVG icons keyed by app id
 ├── utils/
 │   ├── pathUtils.js            resolvePath, getFileName, getParentPath, joinPath
 │   └── audioUtils.js           NOTE_FREQUENCIES, playNote, createADSR, createNoiseBuffer
 ├── hooks/
-│   ├── useApi.js               Generic fetch hook (unused currently, ready for backend)
+│   ├── useApi.js               Generic fetch hook (unused — ready for backend)
 │   ├── useGameLoop.js          requestAnimationFrame wrapper with delta time + cleanup
 │   └── useAudioContext.js      AudioContext singleton, browser autoplay policy handling
 ├── components/
-│   ├── Desktop/                Renders icon grid + open windows + taskbar + context menu
-│   ├── Window/                 Draggable/resizable window shell with open/close animations
-│   ├── DesktopIcon/            Desktop shortcut with right-click context menu
-│   ├── Taskbar/                Taskbar bar + StartMenu + TaskbarClock
-│   ├── LoginScreen/            Login form over themed desktop background
-│   ├── BootScreen/             Animated boot sequence (POST text → loading bar → logo)
-│   ├── FileDialog/             Reusable Save As / Open dialog with folder navigation
-│   ├── ErrorBoundary/          Per-app crash boundary with retro error dialog
-│   ├── NotificationArea/       Toast notifications (bottom-right, auto-dismiss)
-│   ├── ContextMenu/            Right-click context menus (positioned at cursor)
+│   ├── Desktop/                Icon grid + open windows + taskbar + context menu
+│   ├── Window/                 Draggable/resizable shell with animations
+│   ├── DesktopIcon/            Desktop shortcut with right-click menu
+│   ├── Taskbar/                Bar + StartMenu + TaskbarClock
+│   ├── LoginScreen/            Login form over themed background
+│   ├── BootScreen/             POST text → loading bar → logo
+│   ├── FileDialog/             Save As / Open dialog with folder navigation
+│   ├── ErrorBoundary/          Per-app crash boundary
+│   ├── NotificationArea/       Toast notifications
+│   ├── ContextMenu/            Right-click menus
 │   └── TerminalView/           Shared terminal renderer (scrollable output + input + cursor)
-└── apps/
-    ├── Calculator/             Calculator.jsx + .css
-    ├── Notepad/                Notepad.jsx + .css (file system, save notifications)
-    ├── FileManager/            FileManager.jsx + .css (file system, context menus)
-    ├── RealmsOfAdventure/      RealmsOfAdventure.jsx, MainMenu, GameScreen, PastAdventures, useOllama, systemPrompt
-    ├── Personalization/        Personalization.jsx + .css (theme switcher)
-    ├── Terminal/               Terminal.jsx + .css + commands.js (uses TerminalView)
-    ├── Minesweeper/            Minesweeper.jsx + .css + useMinesweeper.js
-    ├── ArcadeCabinet/          ArcadeCabinet.jsx + .css, GameMenu, games/{Breakout,SpaceShooter,Pong,Runner}, useHighScores
-    ├── HackingSim/             HackingSim.jsx + .css, LevelSelect, HackingTerminal, useHackingGame, levels/{cipher,password,filesystem,exploit}
-    ├── PixelStudio/            PixelStudio.jsx + .css, Canvas, Toolbar, ColorPalette, usePixelCanvas
-    ├── ChiptuneMaker/          ChiptuneMaker.jsx + .css, TrackerGrid, InstrumentPanel, TransportBar, useAudioEngine, noteFrequencies
-    └── Radio/                  Radio.jsx + .css, StationList, NowPlaying, useRadioPlayer, stations
+└── apps/                       One folder per app (component + CSS + hooks/helpers)
 ```
 
-### Provider Nesting Order (App.jsx)
+### Provider Nesting (App.jsx)
 
 ```
 ThemeProvider                    ← always mounted (themes work on login screen too)
   AuthProvider                   ← always mounted
-    AppContent                   ← BootScreen (once per session) → LoginScreen → Desktop
+    AppContent                   ← BootScreen (once) → LoginScreen → Desktop
       FileSystemProvider         ← only when authenticated
-        WindowManagerProvider    ← only when authenticated
+        WindowManagerProvider
           NotificationProvider
             ContextMenuProvider
-              Desktop            ← the OS
+              Desktop
 ```
 
-This means logging out unmounts the entire FileSystem + WindowManager tree, giving a clean slate on next login. The boot screen shows once per browser session (sessionStorage flag).
+Logging out unmounts the FileSystem + WindowManager tree, giving a clean slate on next login.
 
 ### Key Patterns
 
-**App Registry** — Single source of truth for all apps. Add an entry to `appRegistry.js` and an icon to `appIcons.jsx` and the app automatically appears on the desktop and in the Start Menu. Set `systemApp: true` to hide from desktop (Start Menu only). Set `allowMultiple: true/false` to control instance behavior.
-
-**App Props** — `openWindow(appId, appProps)` passes custom data to app instances. Apps receive `{ windowId, appProps }`. Used by File Manager to open files in Notepad: `openWindow('notepad', { filePath: '/Documents/hello.txt' })`.
-
-**Dynamic Window Titles** — Apps call `updateWindowTitle(windowId, 'new title')` to change their title bar text (e.g., Notepad shows the filename).
-
-**CSS Theming** — Every color, font, border, and dimension references a CSS variable. To add a new themed component, use existing variables like `var(--color-surface)`, `var(--color-highlight)`, `var(--border-button)`, etc. Check `src/themes/retroClassic.js` for the full variable list.
+- **App Registry** — Add an entry to `appRegistry.js` + icon to `appIcons.jsx` and the app appears on desktop and Start Menu automatically. `systemApp: true` hides from desktop. `allowMultiple` controls instances.
+- **App Props** — `openWindow(appId, appProps)` passes data to instances. Apps receive `{ windowId, appProps }`.
+- **Dynamic Window Titles** — Apps call `updateWindowTitle(windowId, 'new title')` to update their title bar.
+- **CSS Theming** — Every visual property references a CSS variable. See `src/themes/retroClassic.js` for the full variable list.
 
 ---
 
@@ -219,141 +164,89 @@ This means logging out unmounts the entire FileSystem + WindowManager tree, givi
    {
      id: 'myapp',
      title: 'My App',
-     icon: 'myapp',           // matches appIcons key
+     icon: 'myapp',
      component: MyApp,
      defaultSize: { width: 500, height: 400 },
-     allowMultiple: false,     // true = can open multiple instances
-     // systemApp: true,       // uncomment to hide from desktop icons
+     allowMultiple: false,
+     // systemApp: true,  // hides from desktop icons
    }
    ```
+
 No changes to Desktop, Taskbar, Window, or any other component needed.
 
 ## How to Add a New Theme
 
 1. Copy `src/themes/retroClassic.js` to `src/themes/myTheme.js`
-2. Change the `id` and `name` fields, adjust colors/fonts/borders
+2. Change the `id` and `name`, adjust colors/fonts/borders
 3. Import and add to `src/themes/index.js`
-4. The theme automatically appears in the Personalization app
+
+The theme automatically appears in the Personalization app.
 
 ---
 
-## Hosting & Deployment Notes
+## Deployment Checklist
 
-> **This section lists everything that needs to change before deploying to a production Linux server.**
+Everything that needs to change before going live on a production server.
 
-### 1. Authentication (CRITICAL)
+### 1. Authentication (Critical)
 
-The current auth is a **frontend-only mock** — it accepts any username/password and stores the session in localStorage. This must be replaced before production.
+Current auth is a frontend-only mock. Replace with real auth before production.
 
-**What needs to happen:**
 - Build a backend auth service (planned: Python + FastAPI)
-- Implement real login with email/password and/or OAuth (Google)
-- Use JWT tokens stored in httpOnly cookies (not localStorage — vulnerable to XSS)
-- `AuthContext.jsx` needs to be updated to call the backend for login/logout/session validation
-- Add a registration flow (currently there's no sign-up, only login)
+- Implement email/password registration + login (OAuth optional for beta)
+- JWT tokens in httpOnly cookies (not localStorage)
+- Update `AuthContext.jsx` to call the backend for login/logout/session validation
 
-**Files to modify:** `src/context/AuthContext.jsx`, `src/components/LoginScreen/LoginScreen.jsx`
+### 2. Virtual File System (Critical)
 
-### 2. Virtual File System (CRITICAL)
+Currently in localStorage — data lost on browser clear, no cross-device access, ~5-10MB limit, shared across users on the same browser.
 
-The file system lives entirely in the browser's localStorage. This means:
-- Data is lost if the user clears browser data
-- No cross-device access
-- localStorage has a ~5-10MB limit (will hit this quickly with game transcripts and user files)
-- All users on the same browser share the same filesystem
+- Build a per-user file CRUD API
+- Update `fileSystem.js` / `FileSystemContext.jsx` to sync with the server
+- Consider localStorage as a cache layer with server as source of truth
 
-**What needs to happen:**
-- Build a backend storage API (per-user file CRUD endpoints)
-- `FileSystemContext.jsx` / `fileSystem.js` need to sync with the server instead of (or in addition to) localStorage
-- Consider using localStorage as a cache layer with server as source of truth
+### 3. AI Backend (Critical)
 
-**Files to modify:** `src/services/fileSystem.js`, `src/context/FileSystemContext.jsx`
+Ollama is called directly from the browser at `localhost:11434`. Won't work in production.
 
-### 3. Realms of Adventure — AI Backend (CRITICAL)
+- Build an AI proxy endpoint (FastAPI) with auth validation and rate limiting
+- Make the model configurable (env variable)
+- Update `useOllama.js` to call the proxy instead of Ollama directly
+- Decide: self-host Ollama vs hosted API (OpenAI, Anthropic, etc.)
 
-Currently calls Ollama directly from the browser at `http://localhost:11434`. This will not work in production because:
-- Ollama runs locally on the dev machine, not on the server users connect to
-- Even if Ollama were on the server, exposing it directly to the internet is a security risk (no auth, no rate limiting)
-- The model name `llama3.2` is hardcoded
+### 4. User Settings Persistence
 
-**What needs to happen:**
-- Set up an AI backend proxy (FastAPI endpoint that receives the conversation and forwards it to Ollama/any LLM)
-- Add rate limiting, auth token validation, and abuse prevention
-- Make the model configurable (environment variable or admin setting)
-- The `useOllama.js` hook should be updated to call the backend proxy instead of Ollama directly
-- Consider whether to run Ollama on the same server or use a hosted LLM API (OpenAI, Anthropic, etc.) for production
+Theme choice is in localStorage — not tied to user account.
 
-**Files to modify:** `src/apps/RealmsOfAdventure/useOllama.js`
+- Save preferences to the server on login, fall back to defaults if unavailable
 
-### 4. Theme/Settings Persistence
-
-Theme choice is stored in localStorage (`retroos-theme`). This works but isn't tied to the user account — if they log in on another device, their theme resets.
-
-**What needs to happen:**
-- Once the backend exists, save user preferences (theme, future personalization options) to the server, tied to the user account
-- Load preferences on login, fall back to defaults if unavailable
-
-**Files to modify:** `src/context/ThemeContext.jsx`
-
-### 5. Static Hosting Setup
-
-The frontend is a standard Vite SPA. For production:
+### 5. Static Hosting
 
 ```bash
-npm run build          # outputs to dist/
+npm run build   # outputs to dist/
 ```
 
-Serve `dist/` with any web server (Nginx, Caddy, etc.). You need:
-- **SPA fallback:** All routes should serve `index.html` (there's no client-side routing currently, but good practice)
-- **Gzip/Brotli compression** for the JS/CSS bundles
-- **HTTPS** (required for secure cookies, service workers, and general security)
-- **Reverse proxy** to the backend API (e.g., Nginx proxies `/api/*` to FastAPI)
-
-Example Nginx config:
-```nginx
-server {
-    listen 443 ssl;
-    server_name retroos.example.com;
-
-    root /var/www/retroos/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:8000;
-    }
-}
-```
+Serve `dist/` with Nginx/Caddy. Requirements: SPA fallback (`try_files $uri /index.html`), gzip/brotli, HTTPS, reverse proxy `/api/*` to FastAPI.
 
 ### 6. Environment Variables
 
-Currently only one is referenced (and unused): `VITE_API_URL` (defaults to `/api`). When the backend is built:
-- Set `VITE_API_URL` at build time to point to the API base path
-- The `useApi.js` hook already reads this
+`VITE_API_URL` (defaults to `/api`) — set at build time. The `useApi.js` hook reads this.
 
 ---
 
-## What's Next
+## Roadmap
 
-### Phase 3: App Library & Desktop Polish — COMPLETE
-All 12 apps built and registered. Desktop polish features implemented: window animations, boot screen, right-click context menus, notification toasts. Build passes with 128 modules.
-
-### Phase 4: Backend & Real Auth
+### Phase 4: Backend & Real Auth (Next)
 - Python + FastAPI backend
-- Real authentication (email/password registration + login)
+- Real authentication (email/password + JWT)
 - Per-user file system storage (replace localStorage)
-- Per-user settings/preferences persistence
-- AI proxy endpoint for Realms of Adventure (with rate limiting)
+- Per-user settings persistence
+- AI proxy endpoint with rate limiting
 
 ### Phase 5: Personalization Expansion
-- Custom wallpapers / desktop backgrounds (preset + user upload)
-- More preset themes + custom accent color picker
-- Font selection
-- Icon packs / cursor themes
-- UI sounds and sound packs
+- Wallpapers (preset + custom upload)
+- More themes + custom accent color picker
+- Font selection, icon packs, cursor themes, UI sounds
 
 ### Phase 6: Monetization & Launch
 - Stripe integration for premium subscriptions
@@ -361,212 +254,60 @@ All 12 apps built and registered. Desktop polish features implemented: window an
 - Premium cosmetic content
 - Public beta launch
 
----
-
-## Beta Readiness — What to Add
-
-> This section outlines what RetroOS needs to feel like a complete, releasable beta product. RetroOS isn't trying to be a browser OS — it's a platform where original apps and games are released, all wrapped in a customizable retro desktop that feels like *yours*. The apps need to be genuinely cool things people want to use, not generic OS utilities.
-
-### Priority 1: App Library
-
-The apps below are what make people come to RetroOS and stay. They're original, creative, and fit the retro platform identity. All are pure frontend — no AI, no server costs.
-
-**Tier 1 — High Impact (Build These First)**
-
-| App | What It Is | Why It Matters | Complexity |
-|-----|-----------|----------------|------------|
-| **Hacking Simulator** | A puzzle game where you "hack" fictional systems through a terminal interface. Decode ciphers, crack passwords, navigate fake file systems, exploit vulnerabilities. Levels get progressively harder. | This is the kind of app people screenshot and share. Fits the retro/cyberpunk aesthetic perfectly. Unique to RetroOS — you can't just find this on any website. | Medium-High |
-| **Pixel Studio** | A proper pixel art creation tool. Grid canvas, color palette with custom colors, layers, animation frames (create sprite sheets/GIFs). Save to `/Pictures`. | Not a Paint clone — a dedicated pixel art tool. People love pixel art, and a retro desktop OS is the *perfect* home for it. Users create content they want to keep and come back to. | Medium-High |
-| **Chiptune Maker** | A simple music sequencer with retro sounds. Grid-based tracker style. Pick instruments (square wave, triangle wave, noise, sawtooth), place notes on a timeline, hear your creation. Save/load songs to file system. | Even a basic version is mesmerizing. People spend hours in music tools. Creates another type of user-generated content. | Medium-High |
-| **Arcade Cabinet** | One app that houses a collection of small arcade games — Breakout, a Space Invaders-style shooter, Pong, a simple platformer runner. Each game tracks high scores. Like walking into a retro arcade. | One app, lots of replay value. The high scores give people a reason to come back. The "arcade cabinet" wrapper fits the platform concept (an app that contains games, rather than bare games). | Medium |
-| **Radio / Vibe Player** | A retro radio app that plays lo-fi beats, chiptune, or ambient sounds. Curate a few royalty-free stations/playlists. Users leave it running in the background while using other apps. | Costs almost nothing to run (static audio files or links to free streams). Creates atmosphere and makes the desktop feel *alive*. People open RetroOS just to have the vibe going. | Low-Medium |
-
-**Tier 2 — Adds Depth & "Come Back" Factor**
-
-| App | What It Is | Why It Matters | Complexity |
-|-----|-----------|----------------|------------|
-| **Virtual Pet** | A Tamagotchi-style creature that lives on your desktop. Feed it, play mini-games with it, it grows and evolves over time. Persistent across sessions — when you log back in, time has passed and it may be hungry. | People get emotionally attached. This is a daily-visit driver. Simple to build initially, can be expanded over time with more evolutions, accessories, mini-games. | Medium |
-| **Mystery / Case Files** | A detective investigation game. Get a case file with evidence (documents, images, clues), piece together what happened, submit your answer. New cases can be released periodically. | Gives people a reason to check back — "is there a new case?" Authored content (no AI needed). Could become episodic content that drives engagement. | Medium |
-| **BBS / Message Board** | A retro bulletin board system *inside* the OS. Users post messages, have threads, share their pixel art and chiptune creations, post game high scores. | Turns RetroOS from a solo experience into a community. BBSes are the most retro social network imaginable. Requires backend but is high-value. | Medium (needs backend) |
-| **Minesweeper** | Classic minesweeper. Difficulty levels, timer, best times. | Small, everyone knows it, high replay value. A retro OS without Minesweeper feels incomplete. Quick to build. | Low-Medium |
-| **Terminal** | A retro terminal that operates on the virtual file system. Commands: `ls`, `cd`, `cat`, `mkdir`, `rm`, `echo`, `clear`, `help`, `whoami`, `date`. | Not a utility — it's *vibe*. People open it just because it looks cool. Also becomes the foundation for the Hacking Simulator. | Medium |
-
-**Recommended beta launch lineup (12 apps total): ALL BUILT**
-
-Ships with the OS: Calculator, Notepad, File Manager, Personalization, Terminal
-Games: Realms of Adventure (AI), Minesweeper, Arcade Cabinet, Hacking Simulator
-Creative: Pixel Studio, Chiptune Maker
-Atmosphere: Radio / Vibe Player
-
-This is a mix of games, creative tools, and atmosphere. Some are free, the AI ones are premium. People come for the games, stay for the creative tools, customize their desktop, and pay for the AI experiences.
-
-### Priority 2: Desktop Polish (Makes It Feel "Real")
-
-These are the details that separate a demo from a product.
-
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **Boot Screen** | DONE | Animated boot sequence: POST text → loading bar → RetroOS logo → fade to login. Shows once per browser session. |
-| **Right-Click Context Menus** | DONE | Desktop: Open Terminal, File Manager, Personalization. Desktop icons: Open. File Manager items: Open, Rename, Delete. File Manager empty area: New Folder. |
-| **Window Animations** | DONE | CSS scale+opacity animations: 150ms open (scale 0.5→1), 150ms close (scale 1→0.8 + fade). Close uses two-phase dispatch (CLOSE_WINDOW_START → delay → CLOSE_WINDOW). |
-| **Notification Toasts** | DONE | Bottom-right toast system. Auto-dismiss (3s default). Types: info/success/error. Wired into Notepad, Pixel Studio, Minesweeper, Arcade, Hacking Sim. |
-| **Startup Sound** | Not yet | A short retro chime on login. Optional — user can mute in settings. |
-| **UI Sound Effects** | Not yet | Subtle clicks on button press, window open/close sounds, error beep. All optional/toggleable. Keep them small (< 50KB each). |
-| **Screen Saver** | Not yet | After N minutes of idle: a retro screensaver (starfield, bouncing logo, matrix rain). Click/keypress to dismiss. |
-| **Alt+Tab Switcher** | Not yet | An overlay showing open window thumbnails. Standard OS behavior users expect. |
-| **Desktop Icon Drag & Drop** | Not yet | Let users rearrange their desktop icons. Persist positions in file system or settings. |
-| **Taskbar System Tray** | Not yet | A small area next to the clock for status indicators (volume icon, network icon, notifications). Mostly cosmetic but adds realism. |
-
-**Recommended first batch for beta: ALL DONE.** Boot Screen, Right-Click Context Menus, Window Animations, Notification Toasts.
-
-### Priority 3: More Customization
-
-The Personalization app currently only switches themes. For beta, expand it:
-
-| Feature | Description |
-|---------|-------------|
-| **Wallpapers** | 5-8 preset wallpapers (retro patterns, pixel art landscapes, gradients). Select in Personalization app. Store choice in user settings. |
-| **Custom Wallpaper Upload** | Let users upload their own image. Store as data URL in file system or settings. |
-| **More Preset Themes** | Add 3-4 more themes: High Contrast, Sunset, Ocean, Monochrome Green (terminal style). More variety = more engagement. |
-| **Custom Theme Creator** | Let users pick their own accent colors at minimum. Full custom theme editor is a stretch goal but even "pick your accent color" adds a lot. |
-| **Font Selection** | 3-4 system font options (the current one, a more modern sans-serif, a monospace option, a pixel font). |
-| **Cursor Themes** | 2-3 cursor packs (default, retro crosshair, pixel hand). Pure CSS `cursor: url(...)`. |
-| **Icon Packs** | Alternate icon sets for the desktop and app windows. A "modern flat" pack vs the current retro style. |
-
-**Recommended for beta:** Wallpapers (preset + custom upload), 2-3 more themes, font selection. These are the highest-impact customization additions.
-
-### Priority 4: The Backend (Required for Hosting)
-
-This is the hard prerequisite for going live. Without it, the app simply cannot be hosted for real users.
-
-**Minimum viable backend for beta:**
-1. **Auth** — Real email/password registration + login. JWT in httpOnly cookies. Can skip OAuth for beta.
-2. **File System API** — Per-user CRUD. Replace localStorage with server storage. Can keep localStorage as offline cache.
-3. **User Settings API** — Theme, wallpaper, preferences tied to user account.
-4. **AI Proxy** — Backend endpoint that forwards to the LLM. Rate limiting per user. This is where the cost problem lives (see Monetization section).
-
-**Stack recommendation stays:** Python + FastAPI + PostgreSQL (users/settings) + filesystem or S3 (user files).
+### Desktop Polish Backlog
+- Startup sound / UI sound effects
+- Screen saver (starfield, bouncing logo, matrix rain)
+- Alt+Tab window switcher
+- Desktop icon drag & drop
+- Taskbar system tray
 
 ---
 
-## Monetization Strategy & Thoughts
+## Monetization Strategy
 
-> Ideas on how to make RetroOS generate revenue, ordered by what makes the most sense for this kind of product.
+### The Core Insight
 
-### The Core Problem: AI Costs Money
+Every app except Realms of Adventure is free to serve (static files + small database). The AI game is the only thing with meaningful per-user cost. This creates a natural paywall boundary: **AI is the premium feature.**
 
-Realms of Adventure is the flagship app, but it's also the expensive one. Running a local LLM on a GPU server costs $50-200+/month depending on the GPU. Using a hosted API (OpenAI, Anthropic, etc.) means per-token costs that scale with users. Every other app in RetroOS is essentially free to serve — it's just static files and a small database. The AI game is the only thing with meaningful marginal cost per user.
+### Freemium Model
 
-This actually creates a natural monetization boundary: **the AI is the premium feature.**
+**Free tier:** Full desktop with all non-AI apps, all preset themes/wallpapers, basic customization, 5MB storage, 3-5 free AI sessions/month.
 
-### Recommended Model: Freemium with AI Credits
+**Premium tier ($3-5/month or $30-50/year):** Unlimited AI sessions, future AI apps, premium themes/icon packs, custom theme creator, 50MB+ storage, early access to new apps.
 
-**Free Tier (everyone gets):**
-- Full desktop environment with all non-AI apps
-- All preset themes and wallpapers
-- Basic customization (font, wallpaper, theme selection)
-- File system with a reasonable storage cap (e.g., 5MB)
-- 3-5 free AI game sessions per month (enough to try it, not enough to rely on it)
+### Supplementary Revenue Options
+- **AI Credit Packs** — 10 sessions for $2, 50 for $8 (for occasional players)
+- **Cosmetic Marketplace** — Premium theme/icon/sound packs ($1-2 each)
+- **App Marketplace (long-term)** — Third-party developers build RetroOS apps, 30% revenue share
 
-**Premium Tier ($3-5/month or $30-50/year):**
-- Unlimited AI game sessions (or a generous cap like 50/month)
-- Access to future AI-powered apps (AI art generator, AI chat companion, AI code assistant — all inside the RetroOS environment)
-- Premium themes and icon packs
-- Custom theme creator
-- Increased storage (50MB+)
-- Priority during high load
-- Early access to new apps
+### Implementation Steps
+1. **With backend:** Add `subscription_tier` to users, track AI usage per month, show upgrade prompt at limit
+2. **Payment:** Stripe Checkout for subscriptions, "Manage Subscription" in Start Menu
+3. **Expand:** More AI apps, cosmetic marketplace, credit packs
 
-**Why this works:**
-- Low price point → impulse subscribe territory. $3-5/month is less than a coffee.
-- Free tier is fully usable and fun. Users don't feel locked out. They get Minesweeper, Snake, Paint, Terminal, Notepad, Calculator, File Manager — a real desktop.
-- The paywall is on the *expensive* thing (AI), so revenue directly covers costs.
-- As you add more AI apps, the premium tier becomes more valuable without changing the price.
-
-### Alternative / Complementary Models
-
-**1. AI Credit Packs (one-time purchase)**
-- Sell packs of AI sessions: 10 sessions for $2, 50 for $8.
-- Good for users who play occasionally and don't want a subscription.
-- Can run alongside the subscription model.
-
-**2. Cosmetic Marketplace**
-- Sell premium theme packs ($1-2 each), icon packs, cursor packs, wallpaper packs, sound packs.
-- Low effort to produce, pure profit (no server cost).
-- Works well as supplementary revenue even with a subscription.
-- Could eventually allow community-created packs (take 30% cut).
-
-**3. App Marketplace (Long-Term)**
-- Let third-party developers build RetroOS apps.
-- Charge developers a listing fee or take a revenue share (30% is standard).
-- This is a long-term play — requires a stable API, documentation, and a user base first.
-- But the architecture already supports it (the app registry pattern is clean and extensible).
-
-**4. "RetroOS Pro" One-Time Purchase ($10-15)**
-- Instead of a subscription, sell lifetime access to all premium features.
-- Simpler for users, but harder to sustain if AI costs grow with usage.
-- Could work with a monthly AI session cap even for Pro users.
+### Keeping AI Costs Down
+- Use cheaper models (GPT-4o-mini, Claude Haiku) instead of self-hosting a GPU
+- Cache common openings (pre-generate first response per realm)
+- Cap games at 20 turns
+- Hosted API > self-hosted GPU when small (zero fixed cost, pay per use)
 
 ### What NOT to Do
-
-- **Don't gate basic apps behind payment.** If someone pays to use Notepad or Calculator, the product feels hostile. The desktop itself should always be free and usable.
-- **Don't show ads.** Ads inside a desktop OS simulation would destroy the immersion and feel cheap. The retro aesthetic is the whole appeal — don't ruin it.
-- **Don't charge for accounts.** Registration should be free. The free tier needs to be genuinely good so people tell their friends about it.
-- **Don't make the free tier feel like a demo.** It should feel like a real product with a clear upgrade path, not a crippled trial.
-
-### Monetization Implementation Roadmap
-
-**Step 1 (with backend):**
-- Add a `subscription_tier` field to users (free / premium)
-- Track AI usage per user per month (simple counter in the database)
-- When a free user hits their AI session limit, show a friendly "upgrade" prompt inside the game
-- No payment processing yet — manually upgrade test accounts
-
-**Step 2 (payment integration):**
-- Integrate Stripe for subscriptions ($3-5/month, $30-50/year)
-- Add a "Manage Subscription" option in the Start Menu or System Info app
-- Handle upgrade/downgrade/cancellation
-- Stripe Checkout is the simplest path — redirect to Stripe's hosted page, handle webhooks
-
-**Step 3 (expand premium value):**
-- Add more AI-powered apps to justify the subscription
-- Add cosmetic marketplace items
-- Consider credit packs as an alternative to subscription
-
-### Revenue Projections (Rough)
-
-These are rough numbers to think about, not promises:
-- 1,000 free users, 5% convert to premium at $4/month = $200/month
-- AI server costs (small GPU VPS): ~$80-150/month
-- At 5% conversion, you need ~500-750 free users to break even on AI costs alone
-- At 10% conversion (good for freemium), break even drops to ~250-400 free users
-- Non-AI server costs (basic VPS for the backend + static files): ~$10-20/month — negligible
-
-The key insight: **you don't need massive scale to be sustainable.** A few hundred paying users covers costs. A few thousand and it's profitable.
-
-### Reducing AI Costs
-
-Some tactics to keep AI costs manageable:
-
-- **Use smaller/cheaper models.** llama3.2 is already small. For production, consider a hosted API with a cheap model tier (e.g., GPT-4o-mini, Claude Haiku) rather than self-hosting a GPU.
-- **Cache common openings.** Pre-generate the first response for each realm so the initial scene loads instantly without an API call.
-- **Set hard turn limits.** Cap games at 20 turns maximum — prevents runaway token usage.
-- **Rate limit aggressively for free tier.** 3-5 sessions/month is generous enough to hook users but cheap enough to sustain.
-- **Consider a hosted API over self-hosting.** Running your own Ollama/GPU server has a fixed cost whether 1 or 1,000 people play. A hosted API (OpenAI, Anthropic, Groq) has per-use cost but zero fixed cost — better when you're small and growing.
+- Don't gate basic apps behind payment
+- Don't show ads (destroys the immersion)
+- Don't charge for accounts
+- Don't make the free tier feel like a demo
 
 ---
 
-## Future AI App Ideas (Premium Tier)
-
-These apps would all use the AI backend and live behind the premium paywall, increasing subscription value over time. Each new AI app makes the premium tier more valuable without changing the price.
+## Future AI App Ideas (Premium)
 
 | App | Concept |
 |-----|---------|
-| **AI Chat Companion** | A character that lives in your OS — not a generic chatbot, but a *character* with personality, opinions, and quirks. Customizable personality traits. Remembers past conversations (history saved to file system). Think Clippy if Clippy was actually interesting to talk to. |
-| **Story Forge** | A collaborative creative writing tool. You write a sentence, the AI writes the next, back and forth. Different from Realms of Adventure — this is freeform creative writing, not a structured game. Choose genres, tones, styles. Save stories to file system. |
-| **AI Realm Creator** | Let users design their own Realms of Adventure settings. Describe your world, its rules, its tone — the AI generates the system prompt and runs it. User-generated content for the flagship app. Could allow sharing custom realms with other users. |
-| **AI Art Generator** | Text-to-image generation in a Paint-like interface. Generate retro pixel art or illustrations from descriptions. Could use a cheap/free image model. Results save to `/Pictures` and can be viewed in Pixel Studio. |
-| **AI Tutor** | Educational app — ask questions about any subject, get clear explanations with examples. Could be positioned for students. Different from a generic chatbot because it's structured for learning (tracks topics, suggests next questions, quizzes). |
+| **AI Chat Companion** | A character with personality that lives in your OS. Remembers past conversations. |
+| **Story Forge** | Collaborative writing — you write a sentence, AI writes the next. Freeform, not a structured game. |
+| **AI Realm Creator** | Design custom Realms of Adventure settings. Describe your world, AI generates the system prompt. |
+| **AI Art Generator** | Text-to-image in a Paint-like interface. Results save to `/Pictures`. |
+| **AI Tutor** | Structured educational app — explanations, topic tracking, quizzes. |
 
 ---
 

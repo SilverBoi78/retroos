@@ -59,11 +59,17 @@ export default function HackingTerminal({ level, onSolved, onBack }) {
   }, [handler, level.id, onSolved, onBack])
 
   return (
-    <TerminalView
-      history={history}
-      prompt="hack$"
-      onCommand={handleCommand}
-      className="hackingsim-terminal"
-    />
+    <div className="hackingsim-terminal-wrapper">
+      <div className="hackingsim-terminal-header">
+        <button onClick={onBack} className="hackingsim-back-btn">&#8592; Back</button>
+        <span className="hackingsim-mission-title">MISSION {level.id}: {level.name}</span>
+      </div>
+      <TerminalView
+        history={history}
+        prompt="hack$"
+        onCommand={handleCommand}
+        className="hackingsim-terminal"
+      />
+    </div>
   )
 }

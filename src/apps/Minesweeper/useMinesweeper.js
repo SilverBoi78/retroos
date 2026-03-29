@@ -126,57 +126,50 @@ export default function useMinesweeper() {
 
   const revealCell = useCallback((row, col) => {
     if (gameState === 'won' || gameState === 'lost') return
+    if (grid[row][col].isRevealed || grid[row][col].isFlagged) return
 
-    setGrid(prev => {
-      const next = prev.map(r => r.map(c => ({ ...c })))
-      const cell = next[row][col]
+    const next = grid.map(r => r.map(c => ({ ...c })))
 
-      if (cell.isRevealed || cell.isFlagged) return prev
+    if (isFirstClick.current) {
+      isFirstClick.current = false
+      placeMines(next, config.mines, row, col)
+      startTimer()
+      setGameState('playing')
+    }
 
-      if (isFirstClick.current) {
-        isFirstClick.current = false
-        placeMines(next, config.mines, row, col)
-        startTimer()
-        setGameState('playing')
-      }
-
-      if (next[row][col].isMine) {
-        // Reveal all mines
-        for (const r of next) {
-          for (const c of r) {
-            if (c.isMine) c.isRevealed = true
-          }
+    if (next[row][col].isMine) {
+      for (const r of next) {
+        for (const c of r) {
+          if (c.isMine) c.isRevealed = true
         }
-        next[row][col].exploded = true
-        stopTimer()
-        setGameState('lost')
-        return next
       }
+      next[row][col].exploded = true
+      stopTimer()
+      setGameState('lost')
+      setGrid(next)
+      return
+    }
 
-      floodReveal(next, row, col)
+    floodReveal(next, row, col)
 
-      if (checkWin(next)) {
-        stopTimer()
-        setGameState('won')
-      }
+    if (checkWin(next)) {
+      stopTimer()
+      setGameState('won')
+    }
 
-      return next
-    })
-  }, [gameState, config.mines])
+    setGrid(next)
+  }, [gameState, grid, config.mines])
 
   const toggleFlag = useCallback((row, col) => {
     if (gameState === 'won' || gameState === 'lost') return
+    if (grid[row][col].isRevealed) return
 
-    setGrid(prev => {
-      const next = prev.map(r => r.map(c => ({ ...c })))
-      const cell = next[row][col]
-      if (cell.isRevealed) return prev
-
-      cell.isFlagged = !cell.isFlagged
-      setFlagCount(f => cell.isFlagged ? f + 1 : f - 1)
-      return next
-    })
-  }, [gameState])
+    const next = grid.map(r => r.map(c => ({ ...c })))
+    const cell = next[row][col]
+    cell.isFlagged = !cell.isFlagged
+    setFlagCount(f => cell.isFlagged ? f + 1 : f - 1)
+    setGrid(next)
+  }, [gameState, grid])
 
   return {
     grid,

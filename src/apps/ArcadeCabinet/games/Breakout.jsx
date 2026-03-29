@@ -8,6 +8,9 @@ const BRICK_PAD = 2
 const PADDLE_H = 10
 const PADDLE_W = 60
 const BALL_R = 4
+const BALL_SPEED = 4
+const MAX_BOUNCE_ANGLE = Math.PI / 3
+const LAUNCH_ANGLE = Math.PI / 6
 const BRICK_COLORS = ['#ff4444', '#ff8844', '#ffcc44', '#44cc44', '#4488ff']
 
 export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight }) {
@@ -33,7 +36,7 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
     }
     stateRef.current = {
       paddle: { x: w / 2 - PADDLE_W / 2, y: h - 30 },
-      ball: { x: w / 2, y: h - 50, dx: 3, dy: -3 },
+      ball: { x: w / 2, y: h - 50, dx: BALL_SPEED * Math.sin(LAUNCH_ANGLE), dy: -BALL_SPEED * Math.cos(LAUNCH_ANGLE) },
       bricks, score: 0, lives: 3, started: false, gameOver: false,
     }
   }, [w, h])
@@ -64,8 +67,9 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
       return
     }
 
-    s.ball.x += s.ball.dx
-    s.ball.y += s.ball.dy
+    const frameScale = dt * 60
+    s.ball.x += s.ball.dx * frameScale
+    s.ball.y += s.ball.dy * frameScale
 
     if (s.ball.x - BALL_R < 0 || s.ball.x + BALL_R > w) s.ball.dx *= -1
     if (s.ball.y - BALL_R < 0) s.ball.dy *= -1
@@ -76,9 +80,10 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
         s.ball.y + BALL_R <= s.paddle.y + PADDLE_H &&
         s.ball.x >= s.paddle.x &&
         s.ball.x <= s.paddle.x + PADDLE_W) {
-      s.ball.dy *= -1
       const hit = (s.ball.x - s.paddle.x) / PADDLE_W
-      s.ball.dx = 4 * (hit - 0.5)
+      const angle = (hit - 0.5) * MAX_BOUNCE_ANGLE * 2
+      s.ball.dx = BALL_SPEED * Math.sin(angle)
+      s.ball.dy = -BALL_SPEED * Math.cos(angle)
     }
 
     // Ball out
@@ -90,8 +95,8 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
         return
       }
       s.started = false
-      s.ball.dx = 3
-      s.ball.dy = -3
+      s.ball.dx = BALL_SPEED * Math.sin(LAUNCH_ANGLE)
+      s.ball.dy = -BALL_SPEED * Math.cos(LAUNCH_ANGLE)
     }
 
     // Brick collision

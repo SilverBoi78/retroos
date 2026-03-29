@@ -106,7 +106,11 @@ function windowReducer(state, action) {
         nextZIndex: state.nextZIndex + 1,
       }
 
-    case 'FOCUS_WINDOW':
+    case 'FOCUS_WINDOW': {
+      const target = state.windows.find(w => w.id === action.id)
+      if (target && target.zIndex === state.nextZIndex - 1) {
+        return state
+      }
       return {
         ...state,
         windows: state.windows.map(w =>
@@ -114,6 +118,7 @@ function windowReducer(state, action) {
         ),
         nextZIndex: state.nextZIndex + 1,
       }
+    }
 
     case 'UPDATE_POSITION':
       return {

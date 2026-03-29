@@ -5,6 +5,7 @@ export default function TerminalView({
   history,
   prompt = '$',
   onCommand,
+  getCompletions,
   className = '',
   autoFocus = true,
 }) {
@@ -26,6 +27,26 @@ export default function TerminalView({
   }, [autoFocus])
 
   function handleKeyDown(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      if (!getCompletions) return
+      const completions = getCompletions(currentInput)
+      if (completions.length === 0) return
+      if (completions.length === 1) {
+        setCurrentInput(completions[0])
+      } else {
+        let prefix = completions[0]
+        for (let i = 1; i < completions.length; i++) {
+          while (!completions[i].startsWith(prefix)) {
+            prefix = prefix.slice(0, -1)
+          }
+        }
+        if (prefix.length > currentInput.length) {
+          setCurrentInput(prefix)
+        }
+      }
+      return
+    }
     if (e.key === 'Enter') {
       e.preventDefault()
       const cmd = currentInput.trim()
@@ -58,6 +79,8 @@ export default function TerminalView({
   }
 
   function handleContainerClick() {
+    const sel = window.getSelection()
+    if (sel && sel.toString().length > 0) return
     inputRef.current?.focus()
   }
 
@@ -71,7 +94,7 @@ export default function TerminalView({
         {history.map((entry, i) => (
           <div key={i} className={`terminal-view__line terminal-view__line--${entry.type}`}>
             {entry.type === 'input' && (
-              <span className="terminal-view__prompt">{prompt} </span>
+              <span className="terminal-view__prompt">{entry.prompt || prompt} </span>
             )}
             <span className="terminal-view__text">{entry.text}</span>
           </div>

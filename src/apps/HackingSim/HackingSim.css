@@ -5,9 +5,48 @@
   overflow: auto;
 }
 
-.hackingsim-terminal {
+.hackingsim-terminal-wrapper {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
+}
+
+.hackingsim-terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  background: #111;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+
+.hackingsim-back-btn {
+  background: none;
+  border: 1px solid #444;
+  color: #00ff00;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+.hackingsim-back-btn:hover {
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.hackingsim-mission-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+.hackingsim-terminal {
+  flex: 1;
+  min-height: 0;
 }
 
 .hackingsim-levels {
