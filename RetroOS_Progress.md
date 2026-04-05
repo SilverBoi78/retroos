@@ -311,6 +311,41 @@ Every app except Realms of Adventure is free to serve (static files + small data
 
 ---
 
+## Deployment Info
+
+Fill in these fields before running `deploy/setup.sh`:
+
+| Field | Value |
+|-------|-------|
+| **Server public IP** | 204.168.205.146 |
+| **Git repo URL** | https://github.com/SilverBoi78/retroos.git |
+| **SSH user** | root |
+
+### How to deploy (first time)
+
+```bash
+# SSH into your server
+ssh <user>@<server-ip>
+
+# Clone the repo (or copy setup.sh to the server first)
+git clone <repo-url> /opt/retroos
+cd /opt/retroos
+
+# Run setup
+chmod +x deploy/setup.sh
+sudo bash deploy/setup.sh <repo-url>
+```
+
+### How to update (after pushing changes)
+
+```bash
+ssh <user>@<server-ip>
+cd /opt/retroos
+bash deploy/update.sh
+```
+
+---
+
 ## Development Quick Reference
 
 ```bash
