@@ -16,7 +16,13 @@ async function apiFetch(endpoint, options = {}) {
     err.status = res.status
     throw err
   }
-  return res.json()
+  const text = await res.text()
+  if (!text) return {}
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error('Server returned an invalid response')
+  }
 }
 
 export function AuthProvider({ children }) {
@@ -24,18 +30,27 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState(null)
 
-  // Check for existing session on mount
+  // Check for existing session on mount, with a timeout safety net
   useEffect(() => {
     let cancelled = false
+    let resolved = false
+
+    const finish = (userData) => {
+      if (cancelled || resolved) return
+      resolved = true
+      if (userData) setUser(userData)
+      setLoading(false)
+    }
+
+    // Safety timeout — never stay on blank screen longer than 3 seconds
+    const timeout = setTimeout(() => finish(null), 3000)
+
     apiFetch('/auth/me')
-      .then((data) => {
-        if (!cancelled) setUser(data)
-      })
-      .catch(() => {
-        // 401 = not logged in, network error = backend down — either way, not authenticated
-      })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
+      .then((data) => finish(data))
+      .catch(() => finish(null))
+      .finally(() => clearTimeout(timeout))
+
+    return () => { cancelled = true; clearTimeout(timeout) }
   }, [])
 
   const login = useCallback(async (username, password, sessionDuration = '7d') => {
@@ -47,7 +62,10 @@ export function AuthProvider({ children }) {
       })
       setUser(data)
     } catch (err) {
-      setAuthError(err.message)
+      const message = err.message === 'Failed to fetch'
+        ? 'Could not connect to server. Please try again later.'
+        : err.message
+      setAuthError(message)
       throw err
     }
   }, [])
@@ -61,7 +79,10 @@ export function AuthProvider({ children }) {
       })
       setUser(data)
     } catch (err) {
-      setAuthError(err.message)
+      const message = err.message === 'Failed to fetch'
+        ? 'Could not connect to server. Please try again later.'
+        : err.message
+      setAuthError(message)
       throw err
     }
   }, [])

@@ -22,9 +22,9 @@ function AppContent() {
     return <BootScreen onComplete={handleBootComplete} />
   }
 
-  // Wait for session check before showing login
+  // Wait for session check — show login screen (not blank) while checking
   if (loading) {
-    return null
+    return <LoginScreen />
   }
 
   if (!isAuthenticated) {

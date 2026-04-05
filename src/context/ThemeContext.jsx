@@ -74,7 +74,7 @@ export function ThemeProvider({ children }) {
         }
       })
       .catch(() => {})
-  }, [isAuthenticated, isOfflineMode])
+  }, [isAuthenticated])
 
   const switchTheme = useCallback((id) => {
     setThemeId(id)
@@ -90,7 +90,7 @@ export function ThemeProvider({ children }) {
         body: JSON.stringify({ themeId: id }),
       }).catch(() => {})
     }
-  }, [isAuthenticated, isOfflineMode])
+  }, [isAuthenticated])
 
   return (
     <ThemeContext.Provider value={{ themeId, theme, switchTheme }}>
