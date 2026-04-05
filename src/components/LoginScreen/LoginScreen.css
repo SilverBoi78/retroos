@@ -112,6 +112,46 @@
   box-shadow: var(--border-button-pressed);
 }
 
+.login-screen__select {
+  height: 22px;
+  padding: 2px 4px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-field);
+  border: none;
+  outline: none;
+}
+
+.login-screen__toggle {
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.login-screen__toggle-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-system);
+  font-size: 10px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.login-screen__toggle-btn:hover {
+  opacity: 1;
+}
+
+.login-screen__btn:disabled,
+.login-screen__toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .login-screen__version {
   font-size: 10px;
   color: var(--color-surface-white, #ffffff);

@@ -26,7 +26,7 @@ const DEFAULT_FS = {
   },
 }
 
-function load() {
+function loadLocal() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) return JSON.parse(stored)
@@ -34,15 +34,14 @@ function load() {
   return structuredClone(DEFAULT_FS)
 }
 
-function save(fs) {
+function saveLocal(fs) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(fs))
   } catch {}
 }
 
 function parsePath(path) {
-  const parts = path.split('/').filter(Boolean)
-  return parts
+  return path.split('/').filter(Boolean)
 }
 
 function getNode(fs, path) {
@@ -67,8 +66,20 @@ function getParentAndName(fs, path) {
   return { parent, name }
 }
 
-export function createFileSystem() {
-  let fs = load()
+/**
+ * Create a file system instance.
+ * @param {object} [options]
+ * @param {object} [options.initialTree] - Pre-loaded tree from the API (enables API mode)
+ * @param {object} [options.api] - API module with writeFile, createDir, deleteNode, rename
+ */
+export function createFileSystem(options = {}) {
+  const apiMode = !!options.initialTree
+  let fs = apiMode ? options.initialTree : loadLocal()
+  const api = options.api || null
+
+  function persist() {
+    if (!apiMode) saveLocal(fs)
+  }
 
   function readDir(path) {
     const node = getNode(fs, path)
@@ -102,7 +113,8 @@ export function createFileSystem() {
         modifiedAt: now,
       }
     }
-    save(fs)
+    persist()
+    if (api) api.writeFile(path, content).catch(() => {})
     return true
   }
 
@@ -114,7 +126,8 @@ export function createFileSystem() {
       type: 'directory',
       children: {},
     }
-    save(fs)
+    persist()
+    if (api) api.createDir(path).catch(() => {})
     return true
   }
 
@@ -123,7 +136,8 @@ export function createFileSystem() {
     const { parent, name } = getParentAndName(fs, path)
     if (!parent || parent.type !== 'directory' || !parent.children[name]) return false
     delete parent.children[name]
-    save(fs)
+    persist()
+    if (api) api.deleteNode(path).catch(() => {})
     return true
   }
 
@@ -133,7 +147,8 @@ export function createFileSystem() {
     if (parent.children[newName]) return false
     parent.children[newName] = parent.children[name]
     delete parent.children[name]
-    save(fs)
+    persist()
+    if (api) api.rename(path, newName).catch(() => {})
     return true
   }
 

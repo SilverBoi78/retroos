@@ -10,7 +10,7 @@ import LoginScreen from './components/LoginScreen/LoginScreen'
 import BootScreen from './components/BootScreen/BootScreen'
 
 function AppContent() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
   const [booted, setBooted] = useState(() => sessionStorage.getItem('retroos-booted') === 'true')
 
   const handleBootComplete = useCallback(() => {
@@ -20,6 +20,11 @@ function AppContent() {
 
   if (!booted) {
     return <BootScreen onComplete={handleBootComplete} />
+  }
+
+  // Wait for session check before showing login
+  if (loading) {
+    return null
   }
 
   if (!isAuthenticated) {
@@ -41,11 +46,11 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider>
         <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   )
 }
 

@@ -1,7 +1,10 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { getTheme, defaultThemeId } from '../themes'
+import { useAuth } from './AuthContext'
 
 const ThemeContext = createContext(null)
+
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 function applyTheme(theme) {
   const root = document.documentElement
@@ -43,6 +46,8 @@ function applyTheme(theme) {
 }
 
 export function ThemeProvider({ children }) {
+  const { isAuthenticated, isOfflineMode } = useAuth()
+
   const [themeId, setThemeId] = useState(() => {
     try {
       return localStorage.getItem('retroos-theme') || defaultThemeId
@@ -57,12 +62,35 @@ export function ThemeProvider({ children }) {
     applyTheme(theme)
   }, [theme])
 
+  // Load theme from server when authenticated
+  useEffect(() => {
+    if (!isAuthenticated || isOfflineMode) return
+    fetch(`${API_BASE}/settings`, { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.themeId && data.themeId !== themeId) {
+          setThemeId(data.themeId)
+          try { localStorage.setItem('retroos-theme', data.themeId) } catch {}
+        }
+      })
+      .catch(() => {})
+  }, [isAuthenticated, isOfflineMode])
+
   const switchTheme = useCallback((id) => {
     setThemeId(id)
     try {
       localStorage.setItem('retroos-theme', id)
     } catch {}
-  }, [])
+    // Sync to server if authenticated
+    if (isAuthenticated && !isOfflineMode) {
+      fetch(`${API_BASE}/settings`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ themeId: id }),
+      }).catch(() => {})
+    }
+  }, [isAuthenticated, isOfflineMode])
 
   return (
     <ThemeContext.Provider value={{ themeId, theme, switchTheme }}>

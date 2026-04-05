@@ -3,12 +3,16 @@ import { useAuth } from '../../context/AuthContext'
 import './LoginScreen.css'
 
 export default function LoginScreen() {
-  const { login } = useAuth()
+  const { login, register, authError } = useAuth()
+  const [mode, setMode] = useState('login') // 'login' or 'register'
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [sessionDuration, setSessionDuration] = useState('7d')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
@@ -20,10 +24,38 @@ export default function LoginScreen() {
       setError('Please enter a password.')
       return
     }
+    if (mode === 'register') {
+      if (password.length < 4) {
+        setError('Password must be at least 4 characters.')
+        return
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.')
+        return
+      }
+    }
 
-    // TODO: Replace with real backend authentication
-    login(username.trim())
+    setSubmitting(true)
+    try {
+      if (mode === 'login') {
+        await login(username.trim(), password, sessionDuration)
+      } else {
+        await register(username.trim(), password)
+      }
+    } catch {
+      // authError is set by the context
+    } finally {
+      setSubmitting(false)
+    }
   }
+
+  function toggleMode() {
+    setMode(mode === 'login' ? 'register' : 'login')
+    setError('')
+    setConfirmPassword('')
+  }
+
+  const displayError = error || authError
 
   return (
     <div className="login-screen">
@@ -35,7 +67,7 @@ export default function LoginScreen() {
 
         <div className="login-screen__dialog">
           <div className="login-screen__dialog-title">
-            <span>Welcome to RetroOS</span>
+            <span>{mode === 'login' ? 'Welcome to RetroOS' : 'Create Account'}</span>
           </div>
           <form className="login-screen__form" onSubmit={handleSubmit}>
             <div className="login-screen__field">
@@ -48,6 +80,7 @@ export default function LoginScreen() {
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
                 autoComplete="username"
+                disabled={submitting}
               />
             </div>
             <div className="login-screen__field">
@@ -58,12 +91,55 @@ export default function LoginScreen() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                disabled={submitting}
               />
             </div>
-            {error && <div className="login-screen__error">{error}</div>}
+            {mode === 'register' && (
+              <div className="login-screen__field">
+                <label className="login-screen__label" htmlFor="confirm-password">Confirm Password:</label>
+                <input
+                  id="confirm-password"
+                  className="login-screen__input"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  disabled={submitting}
+                />
+              </div>
+            )}
+            {mode === 'login' && (
+              <div className="login-screen__field">
+                <label className="login-screen__label" htmlFor="session-duration">Remember me:</label>
+                <select
+                  id="session-duration"
+                  className="login-screen__select"
+                  value={sessionDuration}
+                  onChange={(e) => setSessionDuration(e.target.value)}
+                  disabled={submitting}
+                >
+                  <option value="session">This session only</option>
+                  <option value="7d">For 7 days</option>
+                  <option value="30d">For 30 days</option>
+                  <option value="never">Indefinitely</option>
+                </select>
+              </div>
+            )}
+            {displayError && <div className="login-screen__error">{displayError}</div>}
             <div className="login-screen__actions">
-              <button className="login-screen__btn" type="submit">Log In</button>
+              <button
+                className="login-screen__btn"
+                type="submit"
+                disabled={submitting}
+              >
+                {submitting ? '...' : mode === 'login' ? 'Log In' : 'Register'}
+              </button>
+            </div>
+            <div className="login-screen__toggle">
+              <button type="button" className="login-screen__toggle-btn" onClick={toggleMode} disabled={submitting}>
+                {mode === 'login' ? 'Create an account' : 'Already have an account? Log in'}
+              </button>
             </div>
           </form>
         </div>

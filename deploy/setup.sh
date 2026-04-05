@@ -31,12 +31,12 @@ echo "========================================="
 echo ""
 
 # ── 1. Update system packages ──────────────────────────────────────────────
-echo "[1/7] Updating system packages..."
+echo "[1/11] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
 
-# ── 2. Install Node.js 22 LTS ──────────────────────────────────────────────
-echo "[2/7] Installing Node.js 22 LTS..."
+# ── 2. Install Node.js 22 LTS ─────────────────────────────────────────────
+echo "[2/11] Installing Node.js 22 LTS..."
 if command -v node &>/dev/null; then
   echo "  Node.js already installed: $(node --version)"
 else
@@ -45,13 +45,17 @@ else
   echo "  Installed Node.js $(node --version)"
 fi
 
-# ── 3. Install Nginx ───────────────────────────────────────────────────────
-echo "[3/7] Installing Nginx..."
+# ── 3. Install Python 3 ───────────────────────────────────────────────────
+echo "[3/11] Installing Python 3..."
+apt-get install -y python3 python3-pip python3-venv
+
+# ── 4. Install Nginx ──────────────────────────────────────────────────────
+echo "[4/11] Installing Nginx..."
 apt-get install -y nginx
 systemctl enable nginx
 
-# ── 4. Clone the repo ──────────────────────────────────────────────────────
-echo "[4/7] Cloning repository..."
+# ── 5. Clone the repo ─────────────────────────────────────────────────────
+echo "[5/11] Cloning repository..."
 if [ -d "$INSTALL_DIR" ]; then
   echo "  $INSTALL_DIR already exists — pulling latest changes instead."
   cd "$INSTALL_DIR"
@@ -61,15 +65,61 @@ else
   cd "$INSTALL_DIR"
 fi
 
-# ── 5. Install dependencies and build ──────────────────────────────────────
-echo "[5/7] Installing npm dependencies..."
+# ── 6. Install frontend dependencies and build ────────────────────────────
+echo "[6/11] Installing npm dependencies..."
 npm install
 
-echo "[6/7] Building for production..."
+echo "[7/11] Building frontend for production..."
 npm run build
 
-# ── 7. Configure Nginx ─────────────────────────────────────────────────────
-echo "[7/7] Configuring Nginx..."
+# ── 8. Set up backend ─────────────────────────────────────────────────────
+echo "[8/11] Setting up Python backend..."
+cd "$INSTALL_DIR/backend"
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+mkdir -p data
+deactivate
+
+# ── 9. Generate secret key if not present ──────────────────────────────────
+echo "[9/11] Configuring backend environment..."
+if [ ! -f "$INSTALL_DIR/backend/.env" ]; then
+  SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+  cat > "$INSTALL_DIR/backend/.env" <<ENVFILE
+SECRET_KEY=$SECRET
+DATABASE_URL=sqlite:///$INSTALL_DIR/backend/data/retroos.db
+ENVFILE
+  echo "  Generated new .env with secret key"
+else
+  echo "  .env already exists, skipping"
+fi
+
+# ── 10. Create systemd service ─────────────────────────────────────────────
+echo "[10/11] Creating systemd service..."
+cat > /etc/systemd/system/retroos-api.service <<SERVICE
+[Unit]
+Description=RetroOS FastAPI Backend
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=$INSTALL_DIR/backend
+Environment="PATH=$INSTALL_DIR/backend/venv/bin:/usr/bin:/bin"
+EnvironmentFile=$INSTALL_DIR/backend/.env
+ExecStart=$INSTALL_DIR/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+systemctl daemon-reload
+systemctl enable retroos-api
+systemctl start retroos-api
+
+# ── 11. Configure Nginx ───────────────────────────────────────────────────
+echo "[11/11] Configuring Nginx..."
 
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
@@ -80,6 +130,15 @@ server {
 
     root $INSTALL_DIR/dist;
     index index.html;
+
+    # API reverse proxy to FastAPI backend
+    location /api {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
 
     # SPA fallback — all routes serve index.html
     location / {
@@ -114,6 +173,7 @@ echo "  Setup complete!"
 echo "========================================="
 echo ""
 echo "  RetroOS is now live at: http://$SERVER_IP"
+echo "  Backend API running at: http://127.0.0.1:8000"
 echo "  Install directory: $INSTALL_DIR"
 echo ""
 echo "  To update later, run:"

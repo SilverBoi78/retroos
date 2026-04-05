@@ -21,6 +21,7 @@ export default function useApi() {
     try {
       const response = await fetch(`${API_BASE}${endpoint}`, {
         ...options,
+        credentials: 'include',
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
@@ -29,7 +30,10 @@ export default function useApi() {
       })
 
       if (!response.ok) {
-        throw new Error(`${response.status}: ${response.statusText}`)
+        const body = await response.json().catch(() => ({}))
+        const err = new Error(body.detail || `${response.status}: ${response.statusText}`)
+        err.status = response.status
+        throw err
       }
 
       const data = await response.json()
