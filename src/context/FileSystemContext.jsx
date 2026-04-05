@@ -1,26 +1,18 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
 import { createFileSystem } from '../services/fileSystem'
 import { fsApi } from '../services/fileSystemApi'
-import { useAuth } from './AuthContext'
 
 const FileSystemContext = createContext(null)
 
 export function FileSystemProvider({ children }) {
-  const { isOfflineMode } = useAuth()
   const fsRef = useRef(null)
   const [version, setVersion] = useState(0)
   const [ready, setReady] = useState(false)
 
   const bump = useCallback(() => setVersion(v => v + 1), [])
 
-  // Initialize the filesystem — from API if online, from localStorage if offline
+  // Load the user's filesystem from the API on mount
   useEffect(() => {
-    if (isOfflineMode) {
-      fsRef.current = createFileSystem()
-      setReady(true)
-      return
-    }
-
     let cancelled = false
     fsApi.loadTree()
       .then((tree) => {
@@ -30,14 +22,14 @@ export function FileSystemProvider({ children }) {
         }
       })
       .catch(() => {
-        // API failed, fall back to localStorage
+        // If API fails, initialize with empty defaults so the UI doesn't break
         if (!cancelled) {
-          fsRef.current = createFileSystem()
+          fsRef.current = createFileSystem({ initialTree: { type: 'directory', children: {} }, api: fsApi })
           setReady(true)
         }
       })
     return () => { cancelled = true }
-  }, [isOfflineMode])
+  }, [])
 
   const readDir = useCallback((path) => {
     return fsRef.current?.readDir(path) ?? null

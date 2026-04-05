@@ -46,7 +46,7 @@ function applyTheme(theme) {
 }
 
 export function ThemeProvider({ children }) {
-  const { isAuthenticated, isOfflineMode } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const [themeId, setThemeId] = useState(() => {
     try {
@@ -64,7 +64,7 @@ export function ThemeProvider({ children }) {
 
   // Load theme from server when authenticated
   useEffect(() => {
-    if (!isAuthenticated || isOfflineMode) return
+    if (!isAuthenticated) return
     fetch(`${API_BASE}/settings`, { credentials: 'include' })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
@@ -82,7 +82,7 @@ export function ThemeProvider({ children }) {
       localStorage.setItem('retroos-theme', id)
     } catch {}
     // Sync to server if authenticated
-    if (isAuthenticated && !isOfflineMode) {
+    if (isAuthenticated) {
       fetch(`${API_BASE}/settings`, {
         method: 'PUT',
         credentials: 'include',
