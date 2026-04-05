@@ -26,7 +26,10 @@
       "WebFetch(domain:wiki.xfce.org)",
       "WebFetch(domain:github.com)",
       "Bash(curl -s http://localhost:11434/api/tags)",
-      "Bash(find /c/code/retroos -type f -name docker-compose* -o -name Dockerfile -o -name .env* -o -name Makefile)"
+      "Bash(find /c/code/retroos -type f -name docker-compose* -o -name Dockerfile -o -name .env* -o -name Makefile)",
+      "Bash(python -m venv venv)",
+      "Bash(taskkill //F //PID 22332)",
+      "Bash(taskkill //F //PID 27964)"
     ]
   }
 }
