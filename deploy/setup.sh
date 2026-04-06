@@ -31,12 +31,12 @@ echo "========================================="
 echo ""
 
 # ── 1. Update system packages ──────────────────────────────────────────────
-echo "[1/11] Updating system packages..."
+echo "[1/12] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
 
 # ── 2. Install Node.js 22 LTS ─────────────────────────────────────────────
-echo "[2/11] Installing Node.js 22 LTS..."
+echo "[2/12] Installing Node.js 22 LTS..."
 if command -v node &>/dev/null; then
   echo "  Node.js already installed: $(node --version)"
 else
@@ -46,16 +46,16 @@ else
 fi
 
 # ── 3. Install Python 3 ───────────────────────────────────────────────────
-echo "[3/11] Installing Python 3..."
+echo "[3/12] Installing Python 3..."
 apt-get install -y python3 python3-pip python3-venv
 
 # ── 4. Install Nginx ──────────────────────────────────────────────────────
-echo "[4/11] Installing Nginx..."
+echo "[4/12] Installing Nginx..."
 apt-get install -y nginx
 systemctl enable nginx
 
 # ── 5. Clone the repo ─────────────────────────────────────────────────────
-echo "[5/11] Cloning repository..."
+echo "[5/12] Cloning repository..."
 if [ -d "$INSTALL_DIR" ]; then
   echo "  $INSTALL_DIR already exists — pulling latest changes instead."
   cd "$INSTALL_DIR"
@@ -66,14 +66,14 @@ else
 fi
 
 # ── 6. Install frontend dependencies and build ────────────────────────────
-echo "[6/11] Installing npm dependencies..."
+echo "[6/12] Installing npm dependencies..."
 npm install
 
-echo "[7/11] Building frontend for production..."
+echo "[7/12] Building frontend for production..."
 npm run build
 
 # ── 8. Set up backend ─────────────────────────────────────────────────────
-echo "[8/11] Setting up Python backend..."
+echo "[8/12] Setting up Python backend..."
 cd "$INSTALL_DIR/backend"
 python3 -m venv venv
 source venv/bin/activate
@@ -82,12 +82,15 @@ mkdir -p data
 deactivate
 
 # ── 9. Generate secret key if not present ──────────────────────────────────
-echo "[9/11] Configuring backend environment..."
+echo "[9/12] Configuring backend environment..."
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
 if [ ! -f "$INSTALL_DIR/backend/.env" ]; then
   SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
   cat > "$INSTALL_DIR/backend/.env" <<ENVFILE
 SECRET_KEY=$SECRET
 DATABASE_URL=sqlite:///$INSTALL_DIR/backend/data/retroos.db
+CORS_ORIGINS=["http://$SERVER_IP"]
 ENVFILE
   echo "  Generated new .env with secret key"
 else
@@ -95,7 +98,7 @@ else
 fi
 
 # ── 10. Create systemd service ─────────────────────────────────────────────
-echo "[10/11] Creating systemd service..."
+echo "[10/12] Creating systemd service..."
 cat > /etc/systemd/system/retroos-api.service <<SERVICE
 [Unit]
 Description=RetroOS FastAPI Backend
@@ -116,12 +119,9 @@ SERVICE
 
 systemctl daemon-reload
 systemctl enable retroos-api
-systemctl start retroos-api
 
 # ── 11. Configure Nginx ───────────────────────────────────────────────────
-echo "[11/11] Configuring Nginx..."
-
-SERVER_IP=$(hostname -I | awk '{print $1}')
+echo "[11/12] Configuring Nginx..."
 
 cat > /etc/nginx/sites-available/retroos <<NGINX
 server {
@@ -167,6 +167,31 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl restart nginx
 
+# ── 12. Start backend service ─────────────────────────────────────────────
+echo "[12/12] Starting backend service..."
+BACKEND_FAILED=false
+if ! systemctl start retroos-api; then
+  BACKEND_FAILED=true
+  echo ""
+  echo "  WARNING: Backend service failed to start."
+  echo "  Nginx is configured and will proxy /api when the backend is running."
+  echo "  Debug with: journalctl -u retroos-api -n 50"
+  echo ""
+else
+  echo "  Waiting for backend to become ready..."
+  for i in $(seq 1 10); do
+    if curl -sf http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+      echo "  Backend is healthy."
+      break
+    fi
+    if [ "$i" -eq 10 ]; then
+      echo "  WARNING: Backend started but /api/health not responding."
+      echo "  Check: journalctl -u retroos-api -n 50"
+    fi
+    sleep 1
+  done
+fi
+
 echo ""
 echo "========================================="
 echo "  Setup complete!"
@@ -176,6 +201,12 @@ echo "  RetroOS is now live at: http://$SERVER_IP"
 echo "  Backend API running at: http://127.0.0.1:8000"
 echo "  Install directory: $INSTALL_DIR"
 echo ""
+if [ "$BACKEND_FAILED" = true ]; then
+  echo "  WARNING: Backend is NOT running. Fix the issue, then:"
+  echo "    systemctl start retroos-api"
+  echo "    journalctl -u retroos-api -n 50"
+  echo ""
+fi
 echo "  To update later, run:"
 echo "    cd $INSTALL_DIR && bash deploy/update.sh"
 echo ""

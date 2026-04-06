@@ -21,30 +21,26 @@ echo "========================================="
 echo ""
 
 # ── 1. Pull latest code ────────────────────────────────────────────────────
-echo "[1/5] Pulling latest changes..."
+echo "[1/6] Pulling latest changes..."
 git pull origin main
 
 # ── 2. Install frontend dependencies ───────────────────────────────────────
-echo "[2/5] Installing frontend dependencies..."
+echo "[2/6] Installing frontend dependencies..."
 npm install
 
 # ── 3. Rebuild frontend ───────────────────────────────────────────────────
-echo "[3/5] Building frontend for production..."
+echo "[3/6] Building frontend for production..."
 npm run build
 
 # ── 4. Update backend dependencies ────────────────────────────────────────
-echo "[4/5] Updating backend dependencies..."
+echo "[4/6] Updating backend dependencies..."
 cd "$INSTALL_DIR/backend"
 source venv/bin/activate
 pip install -r requirements.txt
 deactivate
 
-# ── 5. Restart backend service ─────────────────────────────────────────────
-echo "[5/6] Restarting backend service..."
-systemctl restart retroos-api
-
-# ── 6. Regenerate Nginx config ────────────────────────────────────────────
-echo "[6/6] Updating Nginx configuration..."
+# ── 5. Regenerate Nginx config ────────────────────────────────────────────
+echo "[5/6] Updating Nginx configuration..."
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
 cat > /etc/nginx/sites-available/retroos <<NGINX
@@ -86,10 +82,40 @@ NGINX
 ln -sf /etc/nginx/sites-available/retroos /etc/nginx/sites-enabled/retroos
 nginx -t && systemctl reload nginx
 
+# ── 6. Restart backend service ─────────────────────────────────────────────
+echo "[6/6] Restarting backend service..."
+BACKEND_FAILED=false
+if ! systemctl restart retroos-api; then
+  BACKEND_FAILED=true
+  echo ""
+  echo "  WARNING: Backend service failed to restart."
+  echo "  Nginx config is updated. Debug with: journalctl -u retroos-api -n 50"
+  echo ""
+else
+  echo "  Waiting for backend to become ready..."
+  for i in $(seq 1 10); do
+    if curl -sf http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+      echo "  Backend is healthy."
+      break
+    fi
+    if [ "$i" -eq 10 ]; then
+      echo "  WARNING: Backend started but /api/health not responding."
+      echo "  Check: journalctl -u retroos-api -n 50"
+    fi
+    sleep 1
+  done
+fi
+
 echo ""
 echo "========================================="
 echo "  Update complete!"
 echo "========================================="
 echo ""
 echo "  Changes are live at: http://$SERVER_IP"
+if [ "$BACKEND_FAILED" = true ]; then
+  echo ""
+  echo "  WARNING: Backend is NOT running. Fix the issue, then:"
+  echo "    systemctl restart retroos-api"
+  echo "    journalctl -u retroos-api -n 50"
+fi
 echo ""
