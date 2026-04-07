@@ -16,10 +16,5 @@ Thumbs.db
 .idea/
 
 # Backend
-backend/venv/
+backend/node_modules/
 backend/data/*.db
-backend/__pycache__/
-backend/app/__pycache__/
-backend/app/routers/__pycache__/
-__pycache__/
-*.pyc

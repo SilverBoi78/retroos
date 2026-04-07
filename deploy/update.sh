@@ -35,14 +35,41 @@ npm run build
 # ── 4. Update backend dependencies ────────────────────────────────────────
 echo "[4/6] Updating backend dependencies..."
 cd "$INSTALL_DIR/backend"
-source venv/bin/activate
-pip install -r requirements.txt
-deactivate
+npm install --production
 
-# ── 5. Regenerate Nginx config ────────────────────────────────────────────
-echo "[5/6] Updating Nginx configuration..."
+# ── 5. Migrate .env from Python format if needed ──────────────────────────
+if grep -q "DATABASE_URL=sqlite:///" "$INSTALL_DIR/backend/.env" 2>/dev/null; then
+  echo "[5/6] Migrating .env from Python to Node format..."
+  sed -i 's|DATABASE_URL=sqlite:///|DATABASE_PATH=|' "$INSTALL_DIR/backend/.env"
+else
+  echo "[5/6] .env format is current, skipping migration"
+fi
+
+# ── 6. Update systemd service, Nginx, and restart ─────────────────────────
+echo "[6/6] Updating service configuration and restarting..."
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
+# Update systemd service to Node.js
+cat > /etc/systemd/system/retroos-api.service <<SERVICE
+[Unit]
+Description=RetroOS Node.js Backend
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=$INSTALL_DIR/backend
+EnvironmentFile=$INSTALL_DIR/backend/.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+systemctl daemon-reload
+
+# Update Nginx config
 cat > /etc/nginx/sites-available/retroos <<NGINX
 server {
     listen 80;
@@ -51,7 +78,7 @@ server {
     root $INSTALL_DIR/dist;
     index index.html;
 
-    # API reverse proxy to FastAPI backend
+    # API reverse proxy to Node.js backend
     location /api {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
@@ -82,8 +109,7 @@ NGINX
 ln -sf /etc/nginx/sites-available/retroos /etc/nginx/sites-enabled/retroos
 nginx -t && systemctl reload nginx
 
-# ── 6. Restart backend service ─────────────────────────────────────────────
-echo "[6/6] Restarting backend service..."
+# Restart backend service
 BACKEND_FAILED=false
 if ! systemctl restart retroos-api; then
   BACKEND_FAILED=true

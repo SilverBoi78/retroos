@@ -31,12 +31,12 @@ echo "========================================="
 echo ""
 
 # ── 1. Update system packages ──────────────────────────────────────────────
-echo "[1/12] Updating system packages..."
+echo "[1/10] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
 
 # ── 2. Install Node.js 22 LTS ─────────────────────────────────────────────
-echo "[2/12] Installing Node.js 22 LTS..."
+echo "[2/10] Installing Node.js 22 LTS..."
 if command -v node &>/dev/null; then
   echo "  Node.js already installed: $(node --version)"
 else
@@ -45,17 +45,17 @@ else
   echo "  Installed Node.js $(node --version)"
 fi
 
-# ── 3. Install Python 3 ───────────────────────────────────────────────────
-echo "[3/12] Installing Python 3..."
-apt-get install -y python3 python3-pip python3-venv
+# ── 3. Install build tools (needed by better-sqlite3) ────────────────────
+echo "[3/10] Installing build tools..."
+apt-get install -y build-essential python3
 
 # ── 4. Install Nginx ──────────────────────────────────────────────────────
-echo "[4/12] Installing Nginx..."
+echo "[4/10] Installing Nginx..."
 apt-get install -y nginx
 systemctl enable nginx
 
 # ── 5. Clone the repo ─────────────────────────────────────────────────────
-echo "[5/12] Cloning repository..."
+echo "[5/10] Cloning repository..."
 if [ -d "$INSTALL_DIR" ]; then
   echo "  $INSTALL_DIR already exists — pulling latest changes instead."
   cd "$INSTALL_DIR"
@@ -66,50 +66,48 @@ else
 fi
 
 # ── 6. Install frontend dependencies and build ────────────────────────────
-echo "[6/12] Installing npm dependencies..."
+echo "[6/10] Installing npm dependencies..."
 npm install
 
-echo "[7/12] Building frontend for production..."
+echo "[7/10] Building frontend for production..."
 npm run build
 
-# ── 8. Set up backend ─────────────────────────────────────────────────────
-echo "[8/12] Setting up Python backend..."
+# ── 8. Set up Node.js backend ────────────────────────────────────────────
+echo "[8/10] Setting up Node.js backend..."
 cd "$INSTALL_DIR/backend"
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+npm install --production
 mkdir -p data
-deactivate
 
 # ── 9. Generate secret key if not present ──────────────────────────────────
-echo "[9/12] Configuring backend environment..."
+echo "[9/10] Configuring backend environment..."
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
 if [ ! -f "$INSTALL_DIR/backend/.env" ]; then
-  SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+  SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))")
   cat > "$INSTALL_DIR/backend/.env" <<ENVFILE
 SECRET_KEY=$SECRET
-DATABASE_URL=sqlite:///$INSTALL_DIR/backend/data/retroos.db
+DATABASE_PATH=$INSTALL_DIR/backend/data/retroos.db
 CORS_ORIGINS=["http://$SERVER_IP"]
+PORT=8000
 ENVFILE
   echo "  Generated new .env with secret key"
 else
   echo "  .env already exists, skipping"
 fi
 
-# ── 10. Create systemd service ─────────────────────────────────────────────
-echo "[10/12] Creating systemd service..."
+# ── 10. Create systemd service and configure Nginx ─────────────────────────
+echo "[10/10] Creating systemd service and configuring Nginx..."
+
 cat > /etc/systemd/system/retroos-api.service <<SERVICE
 [Unit]
-Description=RetroOS FastAPI Backend
+Description=RetroOS Node.js Backend
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=$INSTALL_DIR/backend
-Environment="PATH=$INSTALL_DIR/backend/venv/bin:/usr/bin:/bin"
 EnvironmentFile=$INSTALL_DIR/backend/.env
-ExecStart=$INSTALL_DIR/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=5
 
@@ -120,9 +118,7 @@ SERVICE
 systemctl daemon-reload
 systemctl enable retroos-api
 
-# ── 11. Configure Nginx ───────────────────────────────────────────────────
-echo "[11/12] Configuring Nginx..."
-
+# Configure Nginx
 cat > /etc/nginx/sites-available/retroos <<NGINX
 server {
     listen 80;
@@ -131,7 +127,7 @@ server {
     root $INSTALL_DIR/dist;
     index index.html;
 
-    # API reverse proxy to FastAPI backend
+    # API reverse proxy to Node.js backend
     location /api {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
@@ -167,8 +163,7 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl restart nginx
 
-# ── 12. Start backend service ─────────────────────────────────────────────
-echo "[12/12] Starting backend service..."
+# Start backend service
 BACKEND_FAILED=false
 if ! systemctl start retroos-api; then
   BACKEND_FAILED=true

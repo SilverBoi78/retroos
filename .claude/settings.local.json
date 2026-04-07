@@ -29,7 +29,13 @@
       "Bash(find /c/code/retroos -type f -name docker-compose* -o -name Dockerfile -o -name .env* -o -name Makefile)",
       "Bash(python -m venv venv)",
       "Bash(taskkill //F //PID 22332)",
-      "Bash(taskkill //F //PID 27964)"
+      "Bash(taskkill //F //PID 27964)",
+      "Bash(grep -E '\\\\.\\(toml|json|env|config\\)$|redirects|netlify|vercel')",
+      "Bash(xargs ls:*)",
+      "Bash(grep -r \"POST\\\\|GET\\\\|PUT\\\\|DELETE\\\\|PATCH\" /c/code/retroos/backend/app/routers/*.py)",
+      "Bash(grep:*)",
+      "Bash(timeout 5 node server.js)",
+      "Bash(node -e ':*)"
     ]
   }
 }
