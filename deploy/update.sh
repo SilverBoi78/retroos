@@ -22,6 +22,9 @@ echo ""
 
 # ── 1. Pull latest code ────────────────────────────────────────────────────
 echo "[1/6] Pulling latest changes..."
+# Reset any locally modified tracked files (e.g. SQLite WAL files) so pull doesn't fail
+git checkout -- . 2>/dev/null || true
+git clean -fd backend/data/ 2>/dev/null || true
 git pull origin main
 
 # ── 2. Install frontend dependencies ───────────────────────────────────────
