@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useSettings } from '../../context/SettingsContext'
 
 export default function TaskbarClock() {
+  const { settings } = useSettings()
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -8,7 +10,12 @@ export default function TaskbarClock() {
     return () => clearInterval(timer)
   }, [])
 
-  const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const hour12 = settings.clockFormat === '12h'
+  const timeStr = time.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12,
+  })
   const dateStr = time.toLocaleDateString([], { month: 'short', day: 'numeric' })
 
   return (

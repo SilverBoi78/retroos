@@ -49,7 +49,7 @@ const appRegistry = [
     title: 'Personalization',
     icon: 'personalization',
     component: Personalization,
-    defaultSize: { width: 440, height: 360 },
+    defaultSize: { width: 480, height: 460 },
     allowMultiple: false,
     systemApp: true,
   },

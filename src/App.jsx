@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { FileSystemProvider } from './context/FileSystemContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { ContextMenuProvider } from './context/ContextMenuContext'
+import { SettingsProvider } from './context/SettingsContext'
 import Desktop from './components/Desktop/Desktop'
 import LoginScreen from './components/LoginScreen/LoginScreen'
 import BootScreen from './components/BootScreen/BootScreen'
@@ -32,15 +33,17 @@ function AppContent() {
   }
 
   return (
-    <FileSystemProvider>
-      <WindowManagerProvider>
-        <NotificationProvider>
-          <ContextMenuProvider>
-            <Desktop />
-          </ContextMenuProvider>
-        </NotificationProvider>
-      </WindowManagerProvider>
-    </FileSystemProvider>
+    <SettingsProvider>
+      <FileSystemProvider>
+        <WindowManagerProvider>
+          <NotificationProvider>
+            <ContextMenuProvider>
+              <Desktop />
+            </ContextMenuProvider>
+          </NotificationProvider>
+        </WindowManagerProvider>
+      </FileSystemProvider>
+    </SettingsProvider>
   )
 }
 

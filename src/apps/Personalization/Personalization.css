@@ -2,15 +2,59 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 12px;
-  overflow-y: auto;
   background: var(--color-surface);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+
+.personalization__tabs {
+  display: flex;
+  gap: 0;
+  padding: 4px 8px 0;
+  border-bottom: 1px solid var(--color-surface-dark);
+  flex-shrink: 0;
+}
+
+.personalization__tab {
+  padding: 4px 14px;
+  font-size: 11px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  border: 1px solid var(--color-surface-dark);
+  border-bottom: none;
+  margin-bottom: -1px;
+  position: relative;
+}
+
+.personalization__tab--active {
+  background: var(--color-surface-light);
+  border-bottom: 1px solid var(--color-surface-light);
+  font-weight: 700;
+}
+
+.personalization__tab:hover:not(.personalization__tab--active) {
+  background: var(--color-surface-light);
+}
+
+/* ── Content ──────────────────────────────────────────────────────────────── */
+
+.personalization__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
 }
 
 .personalization__section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+}
+
+.personalization__subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .personalization__section-title {
@@ -24,58 +68,78 @@
 
 .personalization__section-desc {
   font-size: 11px;
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
-.personalization__themes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding-top: 4px;
+.personalization__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
 
-.personalization__theme {
+/* ── Grid (theme/wallpaper cards) ─────────────────────────────────────────── */
+
+.personalization__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.personalization__grid--small .personalization__card {
+  width: 80px;
+}
+
+.personalization__grid--small .personalization__wp-thumb {
+  height: 48px;
+}
+
+.personalization__card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 8px;
+  gap: 4px;
+  padding: 6px;
   background: var(--color-surface);
   box-shadow: var(--border-raised);
   cursor: pointer;
   position: relative;
-  width: 120px;
+  width: 100px;
 }
 
-.personalization__theme:hover {
+.personalization__card:hover {
   background: var(--color-surface-light);
 }
 
-.personalization__theme--active {
+.personalization__card--active {
   box-shadow: var(--border-button-pressed);
   background: var(--color-surface-light);
 }
 
-.personalization__theme-name {
-  font-size: 10px;
+.personalization__card-label {
+  font-size: 9px;
   color: var(--color-text-primary);
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.personalization__theme-check {
+.personalization__check {
   position: absolute;
-  top: 4px;
-  right: 6px;
+  top: 2px;
+  right: 4px;
   font-size: 10px;
   color: var(--color-highlight);
   font-weight: 700;
 }
 
-/* Mini preview */
+/* ── Theme Preview ────────────────────────────────────────────────────────── */
+
 .personalization__preview {
-  width: 100px;
-  height: 68px;
+  width: 86px;
+  height: 56px;
   border: 1px solid var(--color-surface-dark);
   position: relative;
   overflow: hidden;
@@ -83,19 +147,19 @@
 
 .personalization__preview-window {
   position: absolute;
-  top: 10px;
-  left: 14px;
-  width: 56px;
-  height: 38px;
+  top: 8px;
+  left: 12px;
+  width: 48px;
+  height: 32px;
   border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 .personalization__preview-titlebar {
-  height: 8px;
+  height: 7px;
 }
 
 .personalization__preview-body {
-  height: calc(100% - 8px);
+  height: calc(100% - 7px);
   background: #ffffff;
   opacity: 0.9;
 }
@@ -105,6 +169,154 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 8px;
+  height: 6px;
   border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* ── Wallpaper Thumbnails ─────────────────────────────────────────────────── */
+
+.personalization__wp-thumb {
+  width: 100%;
+  height: 56px;
+  border: 1px solid var(--color-surface-dark);
+  border-radius: 1px;
+}
+
+.personalization__wp-thumb--theme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-light);
+}
+
+.personalization__wp-preview-large {
+  margin-top: 4px;
+  border: 1px solid var(--color-surface-dark);
+  max-height: 120px;
+  overflow: hidden;
+}
+
+.personalization__wp-preview-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Color Picker ─────────────────────────────────────────────────────────── */
+
+.personalization__color-input {
+  width: 40px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-surface-dark);
+  cursor: pointer;
+  background: none;
+}
+
+.personalization__color-value {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+/* ── Accent Preview ───────────────────────────────────────────────────────── */
+
+.personalization__accent-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--color-surface-light);
+  box-shadow: var(--border-sunken);
+}
+
+.personalization__accent-bar {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.personalization__accent-swatch {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #ffffff;
+  width: fit-content;
+}
+
+.personalization__accent-menu-item {
+  padding: 3px 16px;
+  font-size: 11px;
+  color: #ffffff;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.personalization__btn {
+  padding: 4px 12px;
+  font-size: 11px;
+  background: var(--color-button-face);
+  box-shadow: var(--border-raised);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.personalization__btn:hover {
+  background: var(--color-surface-light);
+}
+
+.personalization__btn:active {
+  box-shadow: var(--border-button-pressed);
+}
+
+.personalization__btn:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+
+.personalization__btn--danger {
+  color: #cc3333;
+}
+
+.personalization__error {
+  font-size: 11px;
+  color: #cc3333;
+  margin: 0;
+}
+
+/* ── Row layout ───────────────────────────────────────────────────────────── */
+
+.personalization__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Radio / Option Groups ────────────────────────────────────────────────── */
+
+.personalization__option-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.personalization__radio {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.personalization__radio input {
+  cursor: pointer;
 }

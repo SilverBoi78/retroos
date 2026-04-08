@@ -38,6 +38,13 @@ db.exec(`
     UNIQUE(user_id, parent_id, name)
   );
 
+  CREATE TABLE IF NOT EXISTS user_wallpapers (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    image_data BLOB NOT NULL,
+    mime_type TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_fs_nodes_user_id ON fs_nodes(user_id);
   CREATE INDEX IF NOT EXISTS idx_fs_nodes_parent_id ON fs_nodes(parent_id);
   CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);

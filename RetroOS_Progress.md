@@ -20,10 +20,13 @@ The visual identity is a custom retro desktop inspired by Linux desktop environm
 | Styling | CSS custom properties | Theme-driven, no CSS-in-JS, no preprocessors |
 | State management | React Context + useReducer | WindowManager uses useReducer; Auth/Theme/FileSystem use useState |
 | AI (local dev) | Ollama (llama3.2) | Direct fetch from browser, no backend proxy |
-| Persistence | localStorage | User session, theme choice, virtual file system |
+| Backend | Node.js + Express 4.21 | REST API on port 8000, served behind Nginx |
+| Database | SQLite (better-sqlite3) | WAL mode, per-user file system + settings |
+| Auth | JWT + bcryptjs | httpOnly cookies, configurable session duration |
+| Persistence | SQLite (server) + localStorage (fallback) | User data tied to accounts |
 | Linting | ESLint 9 + React plugins | `npm run lint` |
 
-**No backend exists yet.** The entire app is a static SPA. Auth is mocked, files are in localStorage, and Ollama is called directly from the browser.
+**Backend is live.** Node.js/Express API with SQLite persistence, JWT auth, and per-user file system. Deployed to VPS via Nginx reverse proxy.
 
 ---
 
@@ -42,22 +45,32 @@ The visual identity is a custom retro desktop inspired by Linux desktop environm
 
 ### Authentication
 - Login screen gates the entire OS
-- `AuthContext` provides `{ user, isAuthenticated, login, logout }`
+- `AuthContext` provides `{ user, isAuthenticated, login, logout, register }`
 - Start menu shows username and "Log Off" option
-- **Currently a frontend-only mock** — any username/password accepted, session in localStorage
+- Real auth via Express backend — bcrypt password hashing, JWT in httpOnly cookies
+- Configurable session duration (session, 7 days, 30 days, never expire)
 
-### Theme System
+### Theme & Personalization System
 - GTK-inspired engine: each theme is a JS config mapping to CSS custom properties on `:root`
 - All component CSS uses `var(--color-*)` — zero hardcoded colors
 - 3 preset themes: **RetroOS Classic** (warm gray, purple title bars, beveled), **Arctic** (dark navy, flat borders, cyan accents), **Olive** (earthy green, beveled)
 - Themes control: colors, fonts, font sizes, border style (beveled vs flat), border radius, taskbar/title bar height, icon size
-- Theme choice persisted in localStorage
+- Theme choice persisted per-user in backend database
+
+**Personalization app** (tabbed UI):
+- **Themes tab** — Switch between preset themes with mini desktop previews
+- **Wallpaper tab** — Solid color picker, 12 gradient presets, 6 pattern presets, custom image upload (JPEG/PNG/GIF/WebP, max 10MB)
+- **Colors tab** — Custom accent color picker (overrides title bars, selections, menus) with live preview, reset to theme default
+- **Display tab** — Icon size (small/medium/large), font size (small/medium/large), clock format (12h/24h)
+
+All settings persisted per-user in `user_settings.settings_json`. Custom wallpaper images stored as BLOBs in `user_wallpapers` table.
 
 ### Virtual File System
-- In-memory directory tree persisted to localStorage
+- In-memory directory tree synced to backend SQLite via API
 - `FileSystemContext` provides: `readDir`, `readFile`, `writeFile`, `createDir`, `deleteNode`, `rename`, `exists`, `getNodeType`
 - Default directories: `/Documents`, `/Desktop`, `/Pictures`, `/Games` (auto-created on first game save)
 - Reusable `FileDialog` component (Save As / Open) available to any app
+- Per-user isolation — each user gets their own file tree in the database
 
 ### Apps (12 total)
 
@@ -66,7 +79,7 @@ The visual identity is a custom retro desktop inspired by Linux desktop environm
 | **Calculator** | Chained operations, keyboard shortcuts, single instance |
 | **Notepad** | File > New/Open/Save/Save As, Ctrl+S/O/Shift+S, integrates with virtual file system |
 | **File Manager** | Navigate directories, create/rename/delete, double-click opens in Notepad, context menus |
-| **Personalization** | Theme switcher with mini desktop previews (system app — Start Menu only) |
+| **Personalization** | Tabbed settings: themes, wallpapers (presets + custom upload), accent colors, display options (system app — Start Menu only) |
 | **Terminal** | Commands: ls, cd, cat, mkdir, rm, touch, echo, pwd, whoami, date, clear, help. Command history |
 | **Minesweeper** | 3 difficulties, flood-fill reveal, flag toggle, timer, mine counter, win/loss notifications |
 | **Arcade Cabinet** | 4 mini-games (Breakout, Space Shooter, Pong, Runner). Canvas-rendered, per-game high scores |
@@ -97,15 +110,19 @@ src/
 ├── main.jsx                    Entry point
 ├── App.jsx                     Provider tree: Theme → Auth → [Boot → Login → FS → WM → Notifications → ContextMenu → Desktop]
 ├── styles/                     reset.css, variables.css (fallbacks), global.css
-├── themes/                     index.js (registry), retroClassic.js, arctic.js, olive.js
+├── themes/                     index.js (registry), themes.js (all theme data)
 ├── context/
 │   ├── AuthContext.jsx          { user, isAuthenticated, login, logout }
 │   ├── FileSystemContext.jsx    Wraps fileSystem.js, triggers re-renders
-│   ├── ThemeContext.jsx         Applies CSS vars to :root, persists to localStorage
+│   ├── ThemeContext.jsx         Applies CSS vars to :root, syncs with backend
+│   ├── SettingsContext.jsx      Personalization settings (wallpaper, accent, icon/font size, clock format)
 │   ├── WindowManagerContext.jsx useReducer: open/close/minimize/maximize/focus/resize/updateTitle
 │   ├── NotificationContext.jsx  notify(message, options?), dismiss(id), auto-dismiss
 │   └── ContextMenuContext.jsx   showContextMenu(event, items[]), hideContextMenu()
-├── services/fileSystem.js      Virtual FS engine (tree in memory → localStorage)
+├── services/
+│   ├── api.js                  Shared apiFetch() + API_BASE constant
+│   ├── fileSystem.js           Virtual FS engine (tree in memory → API sync)
+│   └── fileSystemApi.js        File system API client
 ├── registry/
 │   ├── appRegistry.js          App definitions array + getApp(id)
 │   └── appIcons.jsx            SVG icons keyed by app id
@@ -134,14 +151,15 @@ src/
 ### Provider Nesting (App.jsx)
 
 ```
-ThemeProvider                    ← always mounted (themes work on login screen too)
-  AuthProvider                   ← always mounted
+AuthProvider                     ← always mounted
+  ThemeProvider                  ← always mounted (themes work on login screen too)
     AppContent                   ← BootScreen (once) → LoginScreen → Desktop
-      FileSystemProvider         ← only when authenticated
-        WindowManagerProvider
-          NotificationProvider
-            ContextMenuProvider
-              Desktop
+      SettingsProvider           ← only when authenticated (wallpaper, accent, display)
+        FileSystemProvider
+          WindowManagerProvider
+            NotificationProvider
+              ContextMenuProvider
+                Desktop
 ```
 
 Logging out unmounts the FileSystem + WindowManager tree, giving a clean slate on next login.
@@ -151,7 +169,8 @@ Logging out unmounts the FileSystem + WindowManager tree, giving a clean slate o
 - **App Registry** — Add an entry to `appRegistry.js` + icon to `appIcons.jsx` and the app appears on desktop and Start Menu automatically. `systemApp: true` hides from desktop. `allowMultiple` controls instances.
 - **App Props** — `openWindow(appId, appProps)` passes data to instances. Apps receive `{ windowId, appProps }`.
 - **Dynamic Window Titles** — Apps call `updateWindowTitle(windowId, 'new title')` to update their title bar.
-- **CSS Theming** — Every visual property references a CSS variable. See `src/themes/retroClassic.js` for the full variable list.
+- **CSS Theming** — Every visual property references a CSS variable. See `src/themes/themes.js` for the full variable list.
+- **Settings System** — `SettingsContext` loads from `/api/settings`, applies CSS overrides for accent color, icon size, font size. Components read settings via `useSettings()` hook.
 
 ---
 
@@ -176,79 +195,55 @@ No changes to Desktop, Taskbar, Window, or any other component needed.
 
 ## How to Add a New Theme
 
-1. Copy `src/themes/retroClassic.js` to `src/themes/myTheme.js`
-2. Change the `id` and `name`, adjust colors/fonts/borders
+1. Open `src/themes/themes.js`
+2. Add a new exported object with a unique `id`, `name`, and all color/border properties (copy an existing theme as template)
 3. Import and add to `src/themes/index.js`
 
 The theme automatically appears in the Personalization app.
 
 ---
 
-## Deployment Checklist
+## Deployment Status
 
-Everything that needs to change before going live on a production server.
+### Completed
+- **Authentication** &#10003; — Express backend with bcrypt + JWT in httpOnly cookies
+- **Virtual File System** &#10003; — Per-user SQLite storage, synced from frontend
+- **User Settings** &#10003; — Theme, wallpaper, accent color, display prefs all persisted per-user
+- **Static Hosting** &#10003; — Nginx serves `dist/`, proxies `/api/*` to Node.js backend
+- **Deploy Scripts** &#10003; — `setup.sh` (first-time) and `update.sh` (pull + rebuild + restart)
 
-### 1. Authentication (Critical)
-
-Current auth is a frontend-only mock. Replace with real auth before production.
-
-- Build a backend auth service (planned: Python + FastAPI)
-- Implement email/password registration + login (OAuth optional for beta)
-- JWT tokens in httpOnly cookies (not localStorage)
-- Update `AuthContext.jsx` to call the backend for login/logout/session validation
-
-### 2. Virtual File System (Critical)
-
-Currently in localStorage — data lost on browser clear, no cross-device access, ~5-10MB limit, shared across users on the same browser.
-
-- Build a per-user file CRUD API
-- Update `fileSystem.js` / `FileSystemContext.jsx` to sync with the server
-- Consider localStorage as a cache layer with server as source of truth
-
-### 3. AI Backend (Critical)
-
-Ollama is called directly from the browser at `localhost:11434`. Won't work in production.
-
-- Build an AI proxy endpoint (FastAPI) with auth validation and rate limiting
-- Make the model configurable (env variable)
-- Update `useOllama.js` to call the proxy instead of Ollama directly
-- Decide: self-host Ollama vs hosted API (OpenAI, Anthropic, etc.)
-
-### 4. User Settings Persistence
-
-Theme choice is in localStorage — not tied to user account.
-
-- Save preferences to the server on login, fall back to defaults if unavailable
-
-### 5. Static Hosting
-
-```bash
-npm run build   # outputs to dist/
-```
-
-Serve `dist/` with Nginx/Caddy. Requirements: SPA fallback (`try_files $uri /index.html`), gzip/brotli, HTTPS, reverse proxy `/api/*` to FastAPI.
-
-### 6. Environment Variables
-
-`VITE_API_URL` (defaults to `/api`) — set at build time. The `useApi.js` hook reads this.
+### Remaining
+- **AI Backend Proxy** — Ollama is still called directly from browser at `localhost:11434`. Needs backend proxy route with auth + rate limiting.
+- **HTTPS/SSL** — Currently HTTP only. Need Let's Encrypt or similar.
+- **Database Backups** — `update.sh` creates pre-update backups. Need automated daily cron backups.
 
 ---
 
 ## Roadmap
 
-### Phase 4: Backend & Real Auth (Next)
-- Python + FastAPI backend
-- Real authentication (email/password + JWT)
-- Per-user file system storage (replace localStorage)
-- Per-user settings persistence
-- AI proxy endpoint with rate limiting
+### Phase 4: Backend & Real Auth &#10003; DONE
+- Node.js + Express backend (migrated from planned Python/FastAPI)
+- Real authentication (username/password + JWT in httpOnly cookies)
+- Per-user file system storage in SQLite (replaced localStorage)
+- Per-user settings persistence (theme + full settings JSON)
+- Nginx reverse proxy, systemd service, automated deploy scripts
 
-### Phase 5: Personalization Expansion
-- Wallpapers (preset + custom upload)
-- More themes + custom accent color picker
-- Font selection, icon packs, cursor themes, UI sounds
+### Phase 5: Personalization Expansion &#10003; DONE
+- Wallpaper system: solid colors, 12 gradient presets, 6 pattern presets, custom image upload
+- Custom accent color picker with live preview
+- Desktop icon size (small/medium/large)
+- System font size (small/medium/large)
+- Clock format (12h/24h)
+- Tabbed Personalization app UI
+- All settings persisted per-user in database
 
-### Phase 6: Monetization & Launch
+### Phase 6: AI Backend Proxy (Next)
+- Backend proxy endpoint for Ollama (currently called direct from browser)
+- Make AI model configurable via environment
+- Rate limiting for AI calls
+- Support for hosted APIs (OpenAI, Anthropic) as alternative to self-hosted Ollama
+
+### Phase 7: Monetization & Launch
 - Stripe integration for premium subscriptions
 - AI usage tracking and tier limits
 - Premium cosmetic content
@@ -260,6 +255,83 @@ Serve `dist/` with Nginx/Caddy. Requirements: SPA fallback (`try_files $uri /ind
 - Alt+Tab window switcher
 - Desktop icon drag & drop
 - Taskbar system tray
+
+---
+
+## Future Personalization Vision
+
+Ideas for taking customization to the next level. These are documented for future development — no code stubs exist yet.
+
+### Custom Theme Creator
+Let users build their own themes from scratch via the Personalization app. A full color picker for each CSS variable group (surface, text, title bars, accents). Users could save, name, export, and share their themes.
+
+### Config File System (like .bashrc)
+Power users could customize their OS via config files in their virtual file system:
+- `~/.retroos/terminal.conf` — Terminal colors, prompt format, aliases, font
+- `~/.retroos/desktop.conf` — Icon layout, default apps, startup programs
+- `~/.retroos/theme.json` — Full custom theme definition (overrides UI settings)
+
+Apps would read their own config files on mount. This gives power users programmatic control while casual users use the Personalization UI.
+
+### Icon Packs
+Swappable icon sets for desktop and Start Menu:
+- **Classic** (current SVG icons)
+- **Pixel** (pixel-art style, 16x16 and 32x32)
+- **Neon** (glowing outlines on dark backgrounds)
+- **Minimal** (thin line icons)
+
+Ship as a JSON manifest + SVG sprite sheet. Users select in Personalization > Display.
+
+### Cursor Themes
+Custom CSS cursors:
+- **Classic** (default browser cursor)
+- **Retro** (pixelated pointer, resize handles, wait spinner)
+- **Neon** (glowing cursor)
+
+Applied via CSS `cursor: url(...)` on the desktop container.
+
+### Sound Packs
+Audio feedback for OS events:
+- Window open/close/minimize/maximize
+- Button clicks, menu opens
+- Error/success notifications
+- Startup/shutdown sounds
+
+Each pack is a set of small audio files loaded via Web Audio API. Users toggle on/off and select pack in Personalization.
+
+### Screen Savers
+Activate after N minutes of inactivity:
+- **Starfield** — 3D star tunnel
+- **Bouncing Logo** — RetroOS logo bouncing off screen edges
+- **Matrix Rain** — Green character rain
+- **Pipes** — Retro 3D pipes
+
+Canvas-rendered, dismiss on any input.
+
+### Community Theme Marketplace
+Users create themes and share them:
+- Export theme as JSON
+- Upload to a community gallery
+- Browse and install others' themes
+- Rating system, featured themes
+- Premium themes could be part of monetization
+
+### Widget System
+Small always-visible panels on the desktop:
+- Clock/weather widget
+- System resource display
+- Sticky notes
+- Music player mini-view
+- Calendar
+
+Draggable, resizable, configurable per-widget. Could be a premium feature.
+
+### Taskbar Customization
+- Position: top, bottom, left, right
+- Auto-hide mode
+- Pinned app shortcuts
+- Custom start button icon/text
+- System tray with notification badges
 
 ---
 
