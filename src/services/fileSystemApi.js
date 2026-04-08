@@ -1,17 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
-
-async function apiFetch(endpoint, options = {}) {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  })
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.detail || res.statusText)
-  }
-  return res.json()
-}
+import { apiFetch } from './api'
 
 export const fsApi = {
   loadTree: () => apiFetch('/fs/tree'),

@@ -9,6 +9,14 @@ router.use(requireAuth);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function validateName(name) {
+  if (!name || name.length > 255 || /[\/\\\0]/.test(name) || name === '.' || name === '..') {
+    const err = new Error('Invalid name');
+    err.status = 400;
+    throw err;
+  }
+}
+
 function getRoot(userId) {
   const root = db.prepare(
     "SELECT * FROM fs_nodes WHERE user_id = ? AND parent_id IS NULL AND name = '/'"
@@ -166,6 +174,7 @@ router.put('/write-file', (req, res) => {
     ).run(content, node.id);
   } else {
     const { parent, name } = resolveParentAndName(req.user.id, pathStr);
+    validateName(name);
     db.prepare(
       "INSERT INTO fs_nodes (user_id, parent_id, name, node_type, content) VALUES (?, ?, ?, 'file', ?)"
     ).run(req.user.id, parent.id, name, content);
@@ -183,6 +192,7 @@ router.post('/create-dir', (req, res) => {
   if (existing) return res.status(409).json({ detail: 'Already exists' });
 
   const { parent, name } = resolveParentAndName(req.user.id, pathStr);
+  validateName(name);
   db.prepare(
     "INSERT INTO fs_nodes (user_id, parent_id, name, node_type) VALUES (?, ?, ?, 'directory')"
   ).run(req.user.id, parent.id, name);
@@ -209,9 +219,7 @@ router.patch('/rename', (req, res) => {
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
 
   const { newName } = req.body;
-  if (!newName || newName.length < 1 || newName.length > 255) {
-    return res.status(400).json({ detail: 'newName must be 1-255 characters' });
-  }
+  validateName(newName);
 
   const node = resolvePath(req.user.id, pathStr);
   if (!node) return res.status(404).json({ detail: 'Not found' });

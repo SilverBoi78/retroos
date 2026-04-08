@@ -1,10 +1,9 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { getTheme, defaultThemeId } from '../themes'
 import { useAuth } from './AuthContext'
+import { API_BASE } from '../services/api'
 
 const ThemeContext = createContext(null)
-
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 function applyTheme(theme) {
   const root = document.documentElement

@@ -26,7 +26,7 @@ if (process.env.CORS_ORIGINS) {
 
 // Middleware
 app.use(cors({ origin: corsOrigins, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
 
 // Routes
@@ -39,8 +39,9 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Global error handler (matches FastAPI's {detail: message} shape)
+// Global error handler
 app.use((err, _req, res, _next) => {
+  console.error(`[${new Date().toISOString()}]`, err.message);
   const status = err.status || 500;
   res.status(status).json({ detail: err.message || 'Internal server error' });
 });

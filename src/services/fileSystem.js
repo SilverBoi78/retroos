@@ -114,7 +114,7 @@ export function createFileSystem(options = {}) {
       }
     }
     persist()
-    if (api) api.writeFile(path, content).catch(() => {})
+    if (api) api.writeFile(path, content).catch(err => console.error('[FS sync]', err.message))
     return true
   }
 
@@ -127,7 +127,7 @@ export function createFileSystem(options = {}) {
       children: {},
     }
     persist()
-    if (api) api.createDir(path).catch(() => {})
+    if (api) api.createDir(path).catch(err => console.error('[FS sync]', err.message))
     return true
   }
 
@@ -137,7 +137,7 @@ export function createFileSystem(options = {}) {
     if (!parent || parent.type !== 'directory' || !parent.children[name]) return false
     delete parent.children[name]
     persist()
-    if (api) api.deleteNode(path).catch(() => {})
+    if (api) api.deleteNode(path).catch(err => console.error('[FS sync]', err.message))
     return true
   }
 
@@ -148,7 +148,7 @@ export function createFileSystem(options = {}) {
     parent.children[newName] = parent.children[name]
     delete parent.children[name]
     persist()
-    if (api) api.rename(path, newName).catch(() => {})
+    if (api) api.rename(path, newName).catch(err => console.error('[FS sync]', err.message))
     return true
   }
 

@@ -48,7 +48,13 @@
       "Bash(systemctl reload:*)",
       "Bash(curl -sf http://127.0.0.1:8000/api/health)",
       "Bash(curl -s -X POST http://127.0.0.1/api/auth/register -H 'Content-Type: application/json' -d '{\"username\":\"testuser\",\"password\":\"test1234\"}')",
-      "Bash(curl -s -X POST http://127.0.0.1/api/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"testuser\",\"password\":\"test1234\"}')"
+      "Bash(curl -s -X POST http://127.0.0.1/api/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"testuser\",\"password\":\"test1234\"}')",
+      "Bash(xargs ls:*)",
+      "Bash(xargs wc:*)",
+      "Bash(git config:*)",
+      "Bash(grep -r \"\\\\.all\\(\\\\|\\\\.get\\(\\\\|INSERT\\\\|UPDATE\\\\|DELETE\" /c/code/retroos/backend/routes/*.js)",
+      "Bash(wc:*)",
+      "Bash(node -e \"const db = require\\('./db'\\); const indexes = db.prepare\\(\\\\\"SELECT name FROM sqlite_master WHERE type='index'\\\\\"\\).all\\(\\); console.log\\('Indexes:', indexes.map\\(i => i.name\\).join\\(', '\\)\\); db.close\\(\\);\")"
     ]
   }
 }

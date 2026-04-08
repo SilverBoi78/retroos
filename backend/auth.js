@@ -45,7 +45,7 @@ function setTokenCookie(res, userId, duration = '7d') {
   const { token, maxAge } = createAccessToken(userId, duration);
   const options = {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/api',
   };

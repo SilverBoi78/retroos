@@ -67,7 +67,7 @@ fi
 
 # ── 6. Install frontend dependencies and build ────────────────────────────
 echo "[6/10] Installing npm dependencies..."
-npm install
+npm ci
 
 echo "[7/10] Building frontend for production..."
 npm run build
@@ -75,7 +75,7 @@ npm run build
 # ── 8. Set up Node.js backend ────────────────────────────────────────────
 echo "[8/10] Setting up Node.js backend..."
 cd "$INSTALL_DIR/backend"
-npm install --production
+npm ci --omit=dev
 mkdir -p data
 
 # ── 9. Generate secret key if not present ──────────────────────────────────
@@ -89,6 +89,7 @@ SECRET_KEY=$SECRET
 DATABASE_PATH=$INSTALL_DIR/backend/data/retroos.db
 CORS_ORIGINS=["http://$SERVER_IP"]
 PORT=8000
+NODE_ENV=production
 ENVFILE
   echo "  Generated new .env with secret key"
 else

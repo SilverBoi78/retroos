@@ -37,6 +37,10 @@ db.exec(`
     modified_at TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE(user_id, parent_id, name)
   );
+
+  CREATE INDEX IF NOT EXISTS idx_fs_nodes_user_id ON fs_nodes(user_id);
+  CREATE INDEX IF NOT EXISTS idx_fs_nodes_parent_id ON fs_nodes(parent_id);
+  CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
 `);
 
 module.exports = db;

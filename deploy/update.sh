@@ -20,6 +20,15 @@ echo "  RetroOS Update"
 echo "========================================="
 echo ""
 
+# ── 0. Back up database ───────────────────────────────────────────────────
+DB_PATH="$INSTALL_DIR/backend/data/retroos.db"
+if [ -f "$DB_PATH" ]; then
+  echo "[0] Backing up database..."
+  cp "$DB_PATH" "$DB_PATH.backup.$(date +%Y%m%d_%H%M%S)"
+  # Keep only last 5 backups
+  ls -t "$DB_PATH".backup.* 2>/dev/null | tail -n +6 | xargs -r rm
+fi
+
 # ── 1. Pull latest code ────────────────────────────────────────────────────
 echo "[1/6] Pulling latest changes..."
 # Reset any locally modified tracked files (e.g. SQLite WAL files) so pull doesn't fail
@@ -29,7 +38,7 @@ git pull origin main
 
 # ── 2. Install frontend dependencies ───────────────────────────────────────
 echo "[2/6] Installing frontend dependencies..."
-npm install
+npm ci
 
 # ── 3. Rebuild frontend ───────────────────────────────────────────────────
 echo "[3/6] Building frontend for production..."
@@ -38,7 +47,7 @@ npm run build
 # ── 4. Update backend dependencies ────────────────────────────────────────
 echo "[4/6] Updating backend dependencies..."
 cd "$INSTALL_DIR/backend"
-npm install --production
+npm ci --omit=dev
 
 # ── 5. Migrate .env from Python format if needed ──────────────────────────
 if grep -q "DATABASE_URL=sqlite:///" "$INSTALL_DIR/backend/.env" 2>/dev/null; then
@@ -46,6 +55,12 @@ if grep -q "DATABASE_URL=sqlite:///" "$INSTALL_DIR/backend/.env" 2>/dev/null; th
   sed -i 's|DATABASE_URL=sqlite:///|DATABASE_PATH=|' "$INSTALL_DIR/backend/.env"
 else
   echo "[5/6] .env format is current, skipping migration"
+fi
+
+# Ensure NODE_ENV=production is set
+if ! grep -q "^NODE_ENV=" "$INSTALL_DIR/backend/.env" 2>/dev/null; then
+  echo "NODE_ENV=production" >> "$INSTALL_DIR/backend/.env"
+  echo "  Added NODE_ENV=production to .env"
 fi
 
 # ── 6. Update systemd service, Nginx, and restart ─────────────────────────

@@ -1,11 +1,9 @@
-import retroClassic from './retroClassic'
-import arctic from './arctic'
-import olive from './olive'
+import { retroClassic, arctic, olive } from './themes'
 
 export const themes = {
-  'retro-classic': retroClassic,
-  'arctic': arctic,
-  'olive': olive,
+  [retroClassic.id]: retroClassic,
+  [arctic.id]: arctic,
+  [olive.id]: olive,
 }
 
 export const defaultThemeId = 'retro-classic'

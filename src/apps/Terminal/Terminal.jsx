@@ -8,6 +8,8 @@ import './Terminal.css'
 
 const COMMANDS = ['ls', 'cd', 'cat', 'mkdir', 'rm', 'touch', 'echo', 'pwd', 'whoami', 'date', 'clear', 'help']
 
+const MAX_HISTORY = 500
+
 export default function Terminal() {
   const [history, setHistory] = useState([
     { type: 'system', text: 'RetroOS Terminal v1.0' },
@@ -21,7 +23,7 @@ export default function Terminal() {
     const trimmed = input.trim()
     const currentPrompt = `${user?.username || 'guest'}@retroos:${cwd}$`
 
-    setHistory(prev => [...prev, { type: 'input', text: trimmed, prompt: currentPrompt }])
+    setHistory(prev => [...prev, { type: 'input', text: trimmed, prompt: currentPrompt }].slice(-MAX_HISTORY))
 
     if (!trimmed) return
 
@@ -40,7 +42,7 @@ export default function Terminal() {
       setHistory(prev => [...prev, {
         type: result.type || 'output',
         text: result.output,
-      }])
+      }].slice(-MAX_HISTORY))
     }
   }, [fs, cwd, user])
 

@@ -31,6 +31,7 @@ export function FileSystemProvider({ children }) {
     return () => { cancelled = true }
   }, [])
 
+  // version in deps forces consumers to re-render when FS mutates (cache invalidation)
   const readDir = useCallback((path) => {
     return fsRef.current?.readDir(path) ?? null
   }, [version, ready])
