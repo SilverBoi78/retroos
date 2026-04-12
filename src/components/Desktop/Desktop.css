@@ -4,14 +4,18 @@
   background: var(--color-desktop-bg-pattern), var(--color-desktop-bg);
   position: relative;
   overflow: hidden;
+  cursor: var(--cursor-default);
 }
 
 .desktop__icons {
   position: absolute;
   top: 8px;
   left: 8px;
+  bottom: calc(var(--taskbar-height) + 8px);
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
   gap: 2px;
   z-index: 1;
 }

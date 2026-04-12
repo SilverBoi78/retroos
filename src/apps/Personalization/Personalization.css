@@ -17,7 +17,7 @@
 
 .personalization__tab {
   padding: 4px 14px;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   background: var(--color-surface);
   color: var(--color-text-primary);
   cursor: pointer;
@@ -58,7 +58,7 @@
 }
 
 .personalization__section-title {
-  font-size: 12px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
@@ -67,13 +67,13 @@
 }
 
 .personalization__section-desc {
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   margin: 0;
 }
 
 .personalization__label {
-  font-size: 11px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -217,7 +217,7 @@
 }
 
 .personalization__color-value {
-  font-size: 11px;
+  font-size: var(--font-size-base);
   font-family: var(--font-mono);
   color: var(--color-text-secondary);
 }
@@ -238,21 +238,21 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   font-weight: 700;
   color: #ffffff;
 }
 
 .personalization__accent-swatch {
   padding: 4px 8px;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: #ffffff;
   width: fit-content;
 }
 
 .personalization__accent-menu-item {
   padding: 3px 16px;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: #ffffff;
 }
 
@@ -260,7 +260,7 @@
 
 .personalization__btn {
   padding: 4px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   background: var(--color-button-face);
   box-shadow: var(--border-raised);
   color: var(--color-text-primary);
@@ -286,7 +286,7 @@
 }
 
 .personalization__error {
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: #cc3333;
   margin: 0;
 }
@@ -312,11 +312,65 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
   cursor: pointer;
 }
 
 .personalization__radio input {
   cursor: pointer;
+}
+
+/* ── Custom Theme Editor ─────────────────────────────────────────────────── */
+
+.personalization__card--create {
+  border: 2px dashed var(--color-surface-dark);
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+.personalization__card--create:hover {
+  opacity: 1;
+  border-color: var(--color-highlight);
+}
+
+.personalization__preview--create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-light);
+}
+
+.personalization__theme-name-input {
+  width: 100%;
+  max-width: 200px;
+  height: 22px;
+  padding: 2px 4px;
+  font-family: var(--font-system);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  box-shadow: var(--border-field);
+  border: none;
+  outline: none;
+}
+
+.personalization__color-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.personalization__color-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.personalization__color-key {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }

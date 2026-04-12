@@ -35,7 +35,13 @@
 
   --font-system: 'Tahoma', 'Geneva', 'Verdana', sans-serif;
   --font-mono: 'Courier New', Consolas, monospace;
+  --font-size-xs: 9px;
+  --font-size-sm: 10px;
   --font-size-base: 11px;
+  --font-size-lg: 12px;
+  --font-size-xl: 13px;
+
+  --cursor-default: default;
 
   --taskbar-height: 32px;
   --title-bar-height: 22px;

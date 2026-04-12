@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { apiFetch, API_BASE } from '../services/api'
 import { useTheme } from './ThemeContext'
+import { getCursorPreset } from '../themes/cursorPresets'
+import { registerCustomTheme } from '../themes'
 
 const SettingsContext = createContext(null)
 
@@ -10,10 +12,12 @@ const DEFAULT_SETTINGS = {
   iconSize: 'medium',
   fontSize: 'medium',
   clockFormat: '24h',
+  cursorTheme: 'default',
+  screenSaver: { enabled: false, type: 'starfield', timeout: 5 },
 }
 
 const ICON_SIZES = { small: '24px', medium: '32px', large: '48px' }
-const FONT_SIZES = { small: '10px', medium: '11px', large: '13px' }
+const FONT_SCALES = { small: 0.91, medium: 1, large: 1.18 }
 
 function applySettingsToCSS(settings, themeId) {
   const root = document.documentElement
@@ -22,9 +26,13 @@ function applySettingsToCSS(settings, themeId) {
   const iconPx = ICON_SIZES[settings.iconSize] || ICON_SIZES.medium
   root.style.setProperty('--icon-size', iconPx)
 
-  // Font size
-  const fontPx = FONT_SIZES[settings.fontSize] || FONT_SIZES.medium
-  root.style.setProperty('--font-size-base', fontPx)
+  // Font size — scale all size tiers together
+  const scale = FONT_SCALES[settings.fontSize] || 1
+  root.style.setProperty('--font-size-xs', `${Math.round(9 * scale)}px`)
+  root.style.setProperty('--font-size-sm', `${Math.round(10 * scale)}px`)
+  root.style.setProperty('--font-size-base', `${Math.round(11 * scale)}px`)
+  root.style.setProperty('--font-size-lg', `${Math.round(12 * scale)}px`)
+  root.style.setProperty('--font-size-xl', `${Math.round(13 * scale)}px`)
 
   // Accent color overrides
   if (settings.accentColor) {
@@ -35,6 +43,11 @@ function applySettingsToCSS(settings, themeId) {
     root.style.setProperty('--color-title-active',
       `linear-gradient(90deg, ${settings.accentColor} 0%, ${lighten(settings.accentColor, 30)} 100%)`)
   }
+
+  // Cursor theme
+  const cursorPreset = getCursorPreset(settings.cursorTheme)
+  root.style.setProperty('--cursor-default', cursorPreset.cursors.default)
+  root.style.setProperty('--cursor-pointer', cursorPreset.cursors.pointer)
 }
 
 function lighten(hex, amount) {
@@ -58,7 +71,12 @@ export function SettingsProvider({ children }) {
     apiFetch('/settings')
       .then((data) => {
         if (cancelled) return
-        if (data.settings) setSettings(s => ({ ...DEFAULT_SETTINGS, ...data.settings }))
+        if (data.settings) {
+          setSettings(s => ({ ...DEFAULT_SETTINGS, ...data.settings }))
+          if (data.settings.customTheme) {
+            registerCustomTheme(data.settings.customTheme)
+          }
+        }
         setHasWallpaper(!!data.hasWallpaper)
         setReady(true)
       })

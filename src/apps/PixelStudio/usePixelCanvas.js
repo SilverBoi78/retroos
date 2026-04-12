@@ -126,7 +126,7 @@ export default function usePixelCanvas(initialWidth = 16, initialHeight = 16) {
     redoStack.current = []
   }, [])
 
-  const exportToPng = useCallback(() => {
+  const createExportCanvas = useCallback(() => {
     const canvas = document.createElement('canvas')
     canvas.width = canvasSize.width
     canvas.height = canvasSize.height
@@ -141,14 +141,24 @@ export default function usePixelCanvas(initialWidth = 16, initialHeight = 16) {
         }
       }
     }
-    return canvas.toDataURL('image/png')
+    return canvas
   }, [pixels, canvasSize])
+
+  const exportToPng = useCallback(() => {
+    return createExportCanvas().toDataURL('image/png')
+  }, [createExportCanvas])
+
+  const exportToBlob = useCallback(() => {
+    return new Promise((resolve) => {
+      createExportCanvas().toBlob(resolve, 'image/png')
+    })
+  }, [createExportCanvas])
 
   return {
     canvasSize, pixels, tool, primaryColor, zoom,
     setTool, setPrimaryColor, setZoom,
     setPixel, getPixel, floodFill, drawLine, drawRect,
-    clearCanvas, newCanvas, exportToPng,
+    clearCanvas, newCanvas, exportToPng, exportToBlob,
     undo, redo, saveUndo,
   }
 }

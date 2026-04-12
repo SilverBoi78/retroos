@@ -92,7 +92,7 @@ export function ThemeProvider({ children }) {
   }, [isAuthenticated])
 
   return (
-    <ThemeContext.Provider value={{ themeId, theme, switchTheme }}>
+    <ThemeContext.Provider value={{ themeId, theme, switchTheme, applyTheme }}>
       {children}
     </ThemeContext.Provider>
   )

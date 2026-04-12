@@ -58,10 +58,10 @@ The visual identity is a custom retro desktop inspired by Linux desktop environm
 - Theme choice persisted per-user in backend database
 
 **Personalization app** (tabbed UI):
-- **Themes tab** — Switch between preset themes with mini desktop previews
+- **Themes tab** — Switch between preset themes with mini desktop previews, create/edit/delete custom themes with full color picker editor
 - **Wallpaper tab** — Solid color picker, 12 gradient presets, 6 pattern presets, custom image upload (JPEG/PNG/GIF/WebP, max 10MB)
 - **Colors tab** — Custom accent color picker (overrides title bars, selections, menus) with live preview, reset to theme default
-- **Display tab** — Icon size (small/medium/large), font size (small/medium/large), clock format (12h/24h)
+- **Display tab** — Icon size (small/medium/large), font size (small/medium/large), clock format (12h/24h), cursor theme (Default/Retro Pixel/Crosshair), screen saver settings (enable/disable, animation type, idle timeout)
 
 All settings persisted per-user in `user_settings.settings_json`. Custom wallpaper images stored as BLOBs in `user_wallpapers` table.
 
@@ -438,3 +438,22 @@ ollama run llama3.2    # ensure the model is pulled
 - `retroos-user` — auth session (JSON)
 - `retroos-theme` — theme ID (string)
 - `retroos-filesystem` — entire virtual file system (JSON)
+
+
+## BUGS
+
+(No known bugs)
+
+## Changelog
+
+### 2026-04-11 — Bug Fixes + Customization Features
+
+**Bug Fixes:**
+- Fixed font size setting — all OS shell CSS now uses `var(--font-size-*)` variables instead of hardcoded pixel values. Small/Medium/Large scales the entire UI proportionally.
+- Fixed icon size overflow — desktop icon container width now scales with `--icon-size`, and icon column wraps to multiple columns before overflowing past the taskbar.
+- Fixed Pixel Studio PNG save — now triggers a real browser download of the PNG file. Also added image preview in File Manager (double-click .png files to view them).
+
+**New Features:**
+- **Cursor Themes** — 3 presets (Default, Retro Pixel, Crosshair) selectable in Personalization > Display.
+- **Custom Theme Creator** — Build your own theme from scratch in Personalization > Themes. Pick colors for every UI element group, choose border style and radius, start from any existing theme as a base. Custom themes persist per-user.
+- **Screen Savers** — 3 canvas-animated screen savers (Starfield, Matrix Rain, Bouncing Logo) that activate after configurable idle timeout. Configurable in Personalization > Display.

@@ -4,8 +4,15 @@ import { useWindowManager } from '../../context/WindowManagerContext'
 import { useContextMenu } from '../../context/ContextMenuContext'
 import './FileManager.css'
 
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp']
+
+function isImageFile(name) {
+  const lower = name.toLowerCase()
+  return IMAGE_EXTENSIONS.some(ext => lower.endsWith(ext))
+}
+
 export default function FileManager({ windowId }) {
-  const { readDir, createDir, deleteNode, rename } = useFileSystem()
+  const { readDir, readFile, createDir, deleteNode, rename } = useFileSystem()
   const { openWindow } = useWindowManager()
   const { showContextMenu } = useContextMenu()
   const [currentPath, setCurrentPath] = useState('/')
@@ -13,6 +20,7 @@ export default function FileManager({ windowId }) {
   const [selected, setSelected] = useState(null)
   const [renaming, setRenaming] = useState(null)
   const [renameValue, setRenameValue] = useState('')
+  const [imagePreview, setImagePreview] = useState(null)
 
   useEffect(() => {
     const items = readDir(currentPath)
@@ -51,6 +59,14 @@ export default function FileManager({ windowId }) {
   function handleItemDoubleClick(entry) {
     if (entry.type === 'directory') {
       navigate(entry.name)
+    } else if (isImageFile(entry.name)) {
+      const filePath = currentPath === '/' ? `/${entry.name}` : `${currentPath}/${entry.name}`
+      const content = readFile(filePath)
+      if (content && typeof content === 'string' && content.startsWith('data:image/')) {
+        setImagePreview({ name: entry.name, src: content })
+      } else {
+        openWindow('notepad', { filePath })
+      }
     } else {
       openWindow('notepad', {
         filePath: currentPath === '/' ? `/${entry.name}` : `${currentPath}/${entry.name}`,
@@ -198,6 +214,20 @@ export default function FileManager({ windowId }) {
         {entries.length} item{entries.length !== 1 ? 's' : ''}
         {selected && ` — "${selected}" selected`}
       </div>
+
+      {imagePreview && (
+        <div className="filemanager__image-overlay" onClick={() => setImagePreview(null)}>
+          <div className="filemanager__image-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="filemanager__image-titlebar">
+              <span>{imagePreview.name}</span>
+              <button className="filemanager__image-close" onClick={() => setImagePreview(null)}>✕</button>
+            </div>
+            <div className="filemanager__image-body">
+              <img src={imagePreview.src} alt={imagePreview.name} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

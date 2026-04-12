@@ -25,7 +25,7 @@
   padding: 2px 6px;
   background: var(--color-title-active);
   color: var(--color-title-text-active);
-  font-size: 11px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 }
 
@@ -46,7 +46,7 @@
   height: 22px;
   padding: 0 8px;
   font-family: var(--font-system);
-  font-size: 11px;
+  font-size: var(--font-size-base);
   background: var(--color-button-face);
   color: var(--color-text-primary);
   box-shadow: var(--border-button);
@@ -64,7 +64,7 @@
 }
 
 .file-dialog__path {
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
   margin-left: auto;
   font-family: var(--font-mono);
@@ -84,7 +84,7 @@
 .file-dialog__empty {
   padding: 8px;
   color: var(--color-text-disabled);
-  font-size: 11px;
+  font-size: var(--font-size-base);
   font-style: italic;
 }
 
@@ -94,7 +94,7 @@
   gap: 6px;
   padding: 2px 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
 }
 
@@ -132,7 +132,7 @@
 }
 
 .file-dialog__label {
-  font-size: 11px;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
   white-space: nowrap;
 }

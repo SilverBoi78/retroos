@@ -30,10 +30,22 @@ export default function PixelStudio() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [canvas.undo, canvas.redo])
 
-  const handleSave = useCallback(() => {
-    const dataUrl = canvas.exportToPng()
+  const handleSave = useCallback(async () => {
     const fileName = saveName.trim() || 'artwork'
+
+    // Browser download (real PNG file)
+    const blob = await canvas.exportToBlob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${fileName}.png`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    // Also save data URL to virtual FS for in-OS access
+    const dataUrl = canvas.exportToPng()
     writeFile(`/Pictures/${fileName}.png`, dataUrl)
+
     setShowSaveDialog(false)
     notify(`Saved ${fileName}.png`, { type: 'success' })
   }, [canvas, saveName, writeFile, notify])

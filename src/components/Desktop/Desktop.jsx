@@ -11,6 +11,8 @@ import ErrorBoundary from '../ErrorBoundary/ErrorBoundary'
 import Taskbar from '../Taskbar/Taskbar'
 import NotificationArea from '../NotificationArea/NotificationArea'
 import ContextMenu from '../ContextMenu/ContextMenu'
+import ScreenSaver from '../ScreenSaver/ScreenSaver'
+import useIdleTimer from '../../hooks/useIdleTimer'
 import './Desktop.css'
 
 function useWallpaperStyle() {
@@ -43,7 +45,11 @@ function useWallpaperStyle() {
 export default function Desktop() {
   const { windows, openWindow } = useWindowManager()
   const { showContextMenu } = useContextMenu()
+  const { settings } = useSettings()
   const wallpaperStyle = useWallpaperStyle()
+
+  const screenSaver = settings.screenSaver || { enabled: false, type: 'starfield', timeout: 5 }
+  const { isIdle, dismiss } = useIdleTimer(screenSaver.timeout, screenSaver.enabled)
 
   const handleDesktopContextMenu = useCallback((e) => {
     if (e.target.closest('.window') || e.target.closest('.taskbar') || e.target.closest('.desktop-icon')) return
@@ -86,6 +92,8 @@ export default function Desktop() {
       <ContextMenu />
       <NotificationArea />
       <Taskbar />
+
+      {isIdle && <ScreenSaver type={screenSaver.type} onDismiss={dismiss} />}
     </div>
   )
 }
