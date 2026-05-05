@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # RetroOS — First-time server setup
-# Run as root: sudo bash setup.sh
-# Optional: sudo bash setup.sh <repo-url>
+# Run as root from inside an already-cloned repo: sudo bash deploy/setup.sh
+# Or fresh, with the repo URL: sudo bash setup.sh <repo-url>
+# Override auto-detected public IP: PUBLIC_IP=<ip> sudo bash deploy/setup.sh
 
 INSTALL_DIR="/opt/retroos"
 REPO_URL="${1:-}"
@@ -14,14 +15,30 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# ── Prompt for repo URL if not provided ─────────────────────────────────────
-if [ -z "$REPO_URL" ]; then
-  read -rp "Enter the Git repo URL (e.g. https://github.com/user/retroos.git): " REPO_URL
-fi
+# ── Resolve the public IP (env override → ipify → hostname -I) ──────────────
+resolve_public_ip() {
+  if [ -n "${PUBLIC_IP:-}" ]; then
+    echo "$PUBLIC_IP"
+    return
+  fi
+  local ip
+  ip=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || true)
+  if [ -z "$ip" ]; then
+    ip=$(curl -fsS --max-time 5 https://ifconfig.me 2>/dev/null || true)
+  fi
+  if [ -z "$ip" ]; then
+    ip=$(hostname -I | awk '{print $1}')
+  fi
+  echo "$ip"
+}
 
-if [ -z "$REPO_URL" ]; then
-  echo "Error: Repo URL is required."
-  exit 1
+# ── Prompt for repo URL only if we still need to clone ──────────────────────
+if [ ! -d "$INSTALL_DIR" ] && [ -z "$REPO_URL" ]; then
+  read -rp "Enter the Git repo URL (e.g. https://github.com/user/retroos.git): " REPO_URL
+  if [ -z "$REPO_URL" ]; then
+    echo "Error: Repo URL is required when $INSTALL_DIR does not exist."
+    exit 1
+  fi
 fi
 
 echo ""
@@ -59,6 +76,8 @@ echo "[5/10] Cloning repository..."
 if [ -d "$INSTALL_DIR" ]; then
   echo "  $INSTALL_DIR already exists — pulling latest changes instead."
   cd "$INSTALL_DIR"
+  git checkout -- . 2>/dev/null || true
+  git clean -fd backend/data/ 2>/dev/null || true
   git pull origin main
 else
   git clone "$REPO_URL" "$INSTALL_DIR"
@@ -80,7 +99,12 @@ mkdir -p data
 
 # ── 9. Generate secret key if not present ──────────────────────────────────
 echo "[9/10] Configuring backend environment..."
-SERVER_IP=$(hostname -I | awk '{print $1}')
+SERVER_IP=$(resolve_public_ip)
+if [ -z "$SERVER_IP" ]; then
+  echo "Error: could not determine public IP. Re-run with PUBLIC_IP=<ip> sudo bash deploy/setup.sh"
+  exit 1
+fi
+echo "  Using public IP: $SERVER_IP"
 
 if [ ! -f "$INSTALL_DIR/backend/.env" ]; then
   SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))")

@@ -75,7 +75,12 @@
       "Bash($NODE *)",
       "Bash(/home/antulior/.nvm/versions/node/v22.22.0/bin/npm install *)",
       "Bash(git -C /home/antulior/code/retroos diff --stat)",
-      "Bash(git -C /home/antulior/code/retroos status --short)"
+      "Bash(git -C /home/antulior/code/retroos status --short)",
+      "Bash(bash -n /home/antulior/code/retroos/deploy/setup.sh)",
+      "Bash(bash -n /home/antulior/code/retroos/deploy/update.sh)",
+      "Bash(bash -n deploy/setup.sh)",
+      "Bash(bash -n deploy/update.sh)",
+      "Bash(bash *)"
     ]
   }
 }

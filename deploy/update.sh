@@ -12,6 +12,23 @@ if [ ! -d "$INSTALL_DIR" ]; then
   exit 1
 fi
 
+# ── Resolve the public IP (env override → ipify → hostname -I) ──────────────
+resolve_public_ip() {
+  if [ -n "${PUBLIC_IP:-}" ]; then
+    echo "$PUBLIC_IP"
+    return
+  fi
+  local ip
+  ip=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || true)
+  if [ -z "$ip" ]; then
+    ip=$(curl -fsS --max-time 5 https://ifconfig.me 2>/dev/null || true)
+  fi
+  if [ -z "$ip" ]; then
+    ip=$(hostname -I | awk '{print $1}')
+  fi
+  echo "$ip"
+}
+
 cd "$INSTALL_DIR"
 
 echo ""
@@ -65,7 +82,23 @@ fi
 
 # ── 6. Update systemd service, Nginx, and restart ─────────────────────────
 echo "[6/6] Updating service configuration and restarting..."
-SERVER_IP=$(hostname -I | awk '{print $1}')
+SERVER_IP=$(resolve_public_ip)
+if [ -z "$SERVER_IP" ]; then
+  echo "Error: could not determine public IP. Re-run with PUBLIC_IP=<ip> bash deploy/update.sh"
+  exit 1
+fi
+echo "  Using public IP: $SERVER_IP"
+
+# Refresh CORS_ORIGINS in .env if the public IP isn't already listed there.
+ENV_FILE="$INSTALL_DIR/backend/.env"
+if [ -f "$ENV_FILE" ] && ! grep -q "http://$SERVER_IP" "$ENV_FILE"; then
+  echo "  Refreshing CORS_ORIGINS in .env to include http://$SERVER_IP"
+  if grep -q "^CORS_ORIGINS=" "$ENV_FILE"; then
+    sed -i "s|^CORS_ORIGINS=.*|CORS_ORIGINS=[\"http://$SERVER_IP\"]|" "$ENV_FILE"
+  else
+    echo "CORS_ORIGINS=[\"http://$SERVER_IP\"]" >> "$ENV_FILE"
+  fi
+fi
 
 # Update systemd service to Node.js
 cat > /etc/systemd/system/retroos-api.service <<SERVICE

@@ -390,35 +390,56 @@ Every app except Realms of Adventure is free to serve (static files + small data
 
 ## Deployment Info
 
-Fill in these fields before running `deploy/setup.sh`:
-
 | Field | Value |
 |-------|-------|
-| **Server public IP** | 204.168.205.146 |
+| **Server public IP** | 178.105.99.137 |
 | **Git repo URL** | https://github.com/SilverBoi78/retroos.git |
 | **SSH user** | root |
+| **Install directory** | /opt/retroos |
+| **Live URL** | http://178.105.99.137 |
 
-### How to deploy (first time)
+### First-time setup (fresh server)
+
+Run these four commands. No placeholders, no edits — they work as-is:
 
 ```bash
-# SSH into your server
-ssh <user>@<server-ip>
-
-# Clone the repo (or copy setup.sh to the server first)
-git clone <repo-url> /opt/retroos
+ssh root@178.105.99.137
+git clone https://github.com/SilverBoi78/retroos.git /opt/retroos
 cd /opt/retroos
-
-# Run setup
-chmod +x deploy/setup.sh
-sudo bash deploy/setup.sh <repo-url>
+sudo bash deploy/setup.sh
 ```
 
-### How to update (after pushing changes)
+`setup.sh` installs Node 22, build tools, and Nginx; builds the frontend; installs the backend; generates `backend/.env` with a fresh `SECRET_KEY` and the correct `CORS_ORIGINS`; creates the `retroos-api` systemd service; and reloads Nginx. When it finishes, RetroOS is live at `http://178.105.99.137` — open it in a browser and register an account.
+
+If the server is behind NAT (common on AWS/GCP), `setup.sh` auto-detects the public IP via `ipify.org`. To override, run with `PUBLIC_IP=<ip> sudo bash deploy/setup.sh`.
+
+### Day-to-day update loop (cachy → server)
 
 ```bash
-ssh <user>@<server-ip>
-cd /opt/retroos
-bash deploy/update.sh
+# On cachy (dev machine)
+git push
+
+# On the server
+ssh root@178.105.99.137
+bash /opt/retroos/deploy/update.sh
+```
+
+`update.sh` backs up the SQLite DB, pulls latest, rebuilds the frontend, restarts the backend, and reloads Nginx. It also auto-heals `CORS_ORIGINS` in `.env` if the server's public IP has changed since setup.
+
+### Troubleshooting
+
+```bash
+# Backend logs (most common — check this first if a request 500s)
+journalctl -u retroos-api -n 50
+
+# Backend service status
+systemctl status retroos-api
+
+# Validate Nginx config
+nginx -t
+
+# Health check (run on the server)
+curl http://127.0.0.1:8000/api/health   # → {"status":"ok"}
 ```
 
 ---
