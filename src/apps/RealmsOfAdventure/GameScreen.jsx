@@ -16,7 +16,6 @@ export default function GameScreen({ messages, turnCount, gameOver, isLoading, o
     onSendMessage(text)
   }
 
-  // Filter out system messages and the initial kickoff "Begin the adventure." message
   const visibleMessages = messages.filter((m, i) => {
     if (m.role === 'system') return false
     if (i === 1 && m.role === 'user' && m.content === 'Begin the adventure.') return false

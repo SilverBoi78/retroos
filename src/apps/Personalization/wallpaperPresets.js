@@ -60,12 +60,10 @@ export const patterns = [
 export function getPresetCSS(preset) {
   if (!preset) return {}
 
-  // It's a gradient
   if (preset.bg === undefined && !preset.size) {
     return { background: preset.css }
   }
 
-  // It's a pattern
   const style = { background: `${preset.css}`, backgroundColor: preset.bg }
   if (preset.size) style.backgroundSize = preset.size
   if (preset.position) style.backgroundPosition = preset.position

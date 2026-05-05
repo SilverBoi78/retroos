@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import appRegistry from '../../registry/appRegistry'
 import { useWindowManager } from '../../context/WindowManagerContext'
 import { useAuth } from '../../context/AuthContext'
+import { play } from '../../sounds'
 import './StartMenu.css'
 
 export default function StartMenu({ onClose }) {
@@ -28,6 +29,7 @@ export default function StartMenu({ onClose }) {
   }
 
   function handleLogOff() {
+    play('logout', { force: true })
     onClose()
     logout()
   }

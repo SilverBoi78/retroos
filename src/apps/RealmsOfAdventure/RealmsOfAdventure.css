@@ -1,6 +1,4 @@
-/* ========================
-   Main Menu
-   ======================== */
+
 .realms__menu {
   display: flex;
   align-items: center;
@@ -46,7 +44,6 @@
   margin: 0;
 }
 
-/* Sections */
 .realms__menu-section {
   display: flex;
   flex-direction: column;
@@ -63,7 +60,6 @@
   color: var(--color-text-primary);
 }
 
-/* Realm Grid */
 .realms__realm-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -116,7 +112,6 @@
   color: var(--color-text-primary);
 }
 
-/* Detail Level */
 .realms__detail-row {
   display: flex;
   gap: 4px;
@@ -148,7 +143,6 @@
   cursor: default;
 }
 
-/* Action Buttons */
 .realms__menu-buttons {
   display: flex;
   flex-direction: column;
@@ -190,9 +184,6 @@
   max-width: 280px;
 }
 
-/* ========================
-   Game Screen
-   ======================== */
 .realms__game {
   display: flex;
   flex-direction: column;
@@ -236,7 +227,6 @@
   box-shadow: var(--border-button-pressed);
 }
 
-/* Chat Log */
 .realms__chat-log {
   flex: 1;
   overflow-y: auto;
@@ -287,7 +277,6 @@
   font-size: 11px;
 }
 
-/* Loading */
 .realms__loading {
   font-style: italic;
   color: var(--color-text-disabled);
@@ -309,7 +298,6 @@
   75% { width: 1.5em; }
 }
 
-/* Input Area */
 .realms__input-area {
   display: flex;
   gap: 4px;
@@ -356,7 +344,6 @@
   cursor: default;
 }
 
-/* Game Over */
 .realms__game-over {
   display: flex;
   align-items: center;
@@ -372,9 +359,6 @@
   color: var(--color-highlight);
 }
 
-/* ========================
-   Past Adventures
-   ======================== */
 .realms__past {
   display: flex;
   flex-direction: column;
@@ -461,7 +445,6 @@
   white-space: nowrap;
 }
 
-/* Reader */
 .realms__past-reader {
   flex: 1;
   overflow-y: auto;

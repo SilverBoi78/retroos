@@ -41,7 +41,6 @@
   overflow: hidden;
 }
 
-/* Transport */
 .chiptune-transport {
   display: flex;
   align-items: center;
@@ -87,7 +86,6 @@
   text-align: center;
 }
 
-/* Tracker Grid */
 .chiptune-grid-wrapper {
   width: 100%;
   height: 100%;
@@ -155,7 +153,6 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* Instruments */
 .chiptune-instruments {
   width: 140px;
   border-left: 1px solid var(--color-surface-dark);

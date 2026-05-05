@@ -50,7 +50,6 @@ export default function Pong({ onGameOver, onBack, canvasWidth, canvasHeight }) 
     if (keysRef.current['ArrowUp'] || keysRef.current['w']) s.player.y = Math.max(0, s.player.y - speed)
     if (keysRef.current['ArrowDown'] || keysRef.current['s']) s.player.y = Math.min(h - PADDLE_H, s.player.y + speed)
 
-    // AI
     const aiCenter = s.ai.y + PADDLE_H / 2
     const aiSpeed = 180 * dt
     if (s.ball.dx > 0) {
@@ -59,13 +58,11 @@ export default function Pong({ onGameOver, onBack, canvasWidth, canvasHeight }) 
     }
     s.ai.y = Math.max(0, Math.min(h - PADDLE_H, s.ai.y))
 
-    // Ball
     s.ball.x += s.ball.dx
     s.ball.y += s.ball.dy
 
     if (s.ball.y <= 0 || s.ball.y >= h - BALL_SIZE) s.ball.dy *= -1
 
-    // Player paddle
     if (s.ball.dx < 0 &&
         s.ball.x <= 20 + PADDLE_W &&
         s.ball.x >= 20 &&
@@ -76,7 +73,6 @@ export default function Pong({ onGameOver, onBack, canvasWidth, canvasHeight }) 
       s.ball.dy = 4 * (hit - 0.5)
     }
 
-    // AI paddle
     if (s.ball.dx > 0 &&
         s.ball.x + BALL_SIZE >= w - 20 - PADDLE_W &&
         s.ball.x + BALL_SIZE <= w - 20 &&
@@ -87,7 +83,6 @@ export default function Pong({ onGameOver, onBack, canvasWidth, canvasHeight }) 
       s.ball.dy = 4 * (hit - 0.5)
     }
 
-    // Score
     if (s.ball.x < 0) {
       s.aiScore++
       if (s.aiScore >= WIN_SCORE) { s.gameOver = true; onGameOver(s.playerScore * 100); return }
@@ -120,7 +115,6 @@ export default function Pong({ onGameOver, onBack, canvasWidth, canvasHeight }) 
     ctx.fillStyle = '#0a0a1a'
     ctx.fillRect(0, 0, w, h)
 
-    // Center line
     ctx.setLineDash([4, 4])
     ctx.strokeStyle = '#333'
     ctx.beginPath()
@@ -129,15 +123,12 @@ export default function Pong({ onGameOver, onBack, canvasWidth, canvasHeight }) 
     ctx.stroke()
     ctx.setLineDash([])
 
-    // Paddles
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(20, s.player.y, PADDLE_W, PADDLE_H)
     ctx.fillRect(w - 20 - PADDLE_W, s.ai.y, PADDLE_W, PADDLE_H)
 
-    // Ball
     ctx.fillRect(s.ball.x, s.ball.y, BALL_SIZE, BALL_SIZE)
 
-    // Scores
     ctx.font = '24px monospace'
     ctx.textAlign = 'center'
     ctx.fillText(s.playerScore, w / 4, 30)

@@ -32,16 +32,14 @@ function parseSettingsJson(raw) {
   }
 }
 
-// GET /api/settings
 router.get('/', (req, res) => {
   const row = getOrCreateSettings(req.user.id);
   const settings = parseSettingsJson(row.settings_json);
-  // Check if user has a custom wallpaper uploaded
+
   const hasWallpaper = !!db.prepare('SELECT 1 FROM user_wallpapers WHERE user_id = ?').get(req.user.id);
   res.json({ themeId: row.theme_id, settings, hasWallpaper });
 });
 
-// PUT /api/settings
 router.put('/', (req, res) => {
   const { themeId, settings } = req.body;
   const row = getOrCreateSettings(req.user.id);
@@ -51,7 +49,7 @@ router.put('/', (req, res) => {
   }
 
   if (settings !== undefined && settings !== null) {
-    // Merge with existing settings
+
     const existing = parseSettingsJson(row.settings_json);
     const merged = { ...existing, ...settings };
     db.prepare('UPDATE user_settings SET settings_json = ? WHERE id = ?')
@@ -61,9 +59,8 @@ router.put('/', (req, res) => {
   res.json({ ok: true });
 });
 
-// POST /api/settings/wallpaper — upload custom wallpaper image
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 10 * 1024 * 1024;
 
 router.post('/wallpaper',
   express.raw({ type: ALLOWED_TYPES, limit: '10mb' }),
@@ -85,7 +82,6 @@ router.post('/wallpaper',
       "INSERT OR REPLACE INTO user_wallpapers (user_id, image_data, mime_type, updated_at) VALUES (?, ?, ?, datetime('now'))"
     ).run(req.user.id, buffer, mimeType);
 
-    // Also update wallpaper setting to 'image'
     const row = getOrCreateSettings(req.user.id);
     const settings = parseSettingsJson(row.settings_json);
     settings.wallpaper = { type: 'image', value: 'custom' };
@@ -96,7 +92,6 @@ router.post('/wallpaper',
   }
 );
 
-// GET /api/settings/wallpaper — serve the user's custom wallpaper
 router.get('/wallpaper', (req, res) => {
   const row = db.prepare('SELECT image_data, mime_type, updated_at FROM user_wallpapers WHERE user_id = ?')
     .get(req.user.id);
@@ -105,16 +100,20 @@ router.get('/wallpaper', (req, res) => {
     return res.status(404).json({ detail: 'No custom wallpaper' });
   }
 
+  const etag = `"${req.user.id}-${row.updated_at}"`;
+  if (req.headers['if-none-match'] === etag) {
+    return res.status(304).end();
+  }
+
   res.set('Content-Type', row.mime_type);
   res.set('Cache-Control', 'private, max-age=86400');
+  res.set('ETag', etag);
   res.send(row.image_data);
 });
 
-// DELETE /api/settings/wallpaper — remove custom wallpaper
 router.delete('/wallpaper', (req, res) => {
   db.prepare('DELETE FROM user_wallpapers WHERE user_id = ?').run(req.user.id);
 
-  // Reset wallpaper setting to theme default
   const row = getOrCreateSettings(req.user.id);
   const settings = parseSettingsJson(row.settings_json);
   settings.wallpaper = { type: 'theme', value: null };

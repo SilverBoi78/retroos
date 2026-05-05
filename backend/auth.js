@@ -1,7 +1,15 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const SECRET_KEY = process.env.SECRET_KEY || 'dev-secret-change-me-in-production';
+const SECRET_KEY = process.env.SECRET_KEY;
+if (!SECRET_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('SECRET_KEY env var is required in production');
+}
+if (!SECRET_KEY) {
+  console.warn('SECRET_KEY not set — using ephemeral dev key (sessions reset on restart)');
+}
+const EFFECTIVE_KEY = SECRET_KEY || crypto.randomBytes(32).toString('hex');
 const ALGORITHM = 'HS256';
 const COOKIE_NAME = 'retroos_token';
 
@@ -25,7 +33,7 @@ function createAccessToken(userId, duration = '7d') {
     ? SESSION_DURATIONS[duration]
     : 7 * 86400;
   const expireSeconds = maxAge !== null ? maxAge : 7 * 86400;
-  const token = jwt.sign({ sub: String(userId) }, SECRET_KEY, {
+  const token = jwt.sign({ sub: String(userId) }, EFFECTIVE_KEY, {
     algorithm: ALGORITHM,
     expiresIn: expireSeconds,
   });
@@ -34,7 +42,7 @@ function createAccessToken(userId, duration = '7d') {
 
 function decodeToken(token) {
   try {
-    const payload = jwt.verify(token, SECRET_KEY, { algorithms: [ALGORITHM] });
+    const payload = jwt.verify(token, EFFECTIVE_KEY, { algorithms: [ALGORITHM] });
     return parseInt(payload.sub, 10);
   } catch {
     return null;
@@ -50,7 +58,7 @@ function setTokenCookie(res, userId, duration = '7d') {
     path: '/api',
   };
   if (maxAge !== null) {
-    options.maxAge = maxAge * 1000; // Express uses milliseconds
+    options.maxAge = maxAge * 1000;
   }
   res.cookie(COOKIE_NAME, token, options);
 }

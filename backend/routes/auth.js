@@ -1,22 +1,37 @@
 const { Router } = require('express');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { hashPassword, verifyPassword, setTokenCookie, COOKIE_NAME } = require('../auth');
 const { requireAuth } = require('../middleware');
 
 const router = Router();
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { detail: 'Too many login attempts. Please wait a few minutes and try again.' },
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { detail: 'Too many accounts created from this IP. Please try again later.' },
+});
+
 const DEFAULT_DIRS = ['Documents', 'Desktop', 'Pictures', 'Games', 'Music'];
 
 const seedUserData = db.transaction((userId) => {
-  // Create default settings
+
   db.prepare('INSERT INTO user_settings (user_id) VALUES (?)').run(userId);
 
-  // Create root directory
   const { lastInsertRowid: rootId } = db.prepare(
     "INSERT INTO fs_nodes (user_id, parent_id, name, node_type) VALUES (?, NULL, '/', 'directory')"
   ).run(userId);
 
-  // Create default directories
   const insertDir = db.prepare(
     "INSERT INTO fs_nodes (user_id, parent_id, name, node_type) VALUES (?, ?, ?, 'directory')"
   );
@@ -33,8 +48,7 @@ function userResponse(user) {
   };
 }
 
-// POST /api/auth/register
-router.post('/register', (req, res) => {
+router.post('/register', registerLimiter, (req, res) => {
   const { username, password } = req.body;
 
   if (!username || username.length < 1 || username.length > 64) {
@@ -62,8 +76,7 @@ router.post('/register', (req, res) => {
   res.status(201).json(userResponse(user));
 });
 
-// POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', loginLimiter, (req, res) => {
   const { username, password, sessionDuration = '7d' } = req.body;
 
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
@@ -76,13 +89,11 @@ router.post('/login', (req, res) => {
   res.json(userResponse(user));
 });
 
-// POST /api/auth/logout
 router.post('/logout', (_req, res) => {
   res.clearCookie(COOKIE_NAME, { path: '/api' });
   res.json({ ok: true });
 });
 
-// GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   res.json(userResponse(req.user));
 });

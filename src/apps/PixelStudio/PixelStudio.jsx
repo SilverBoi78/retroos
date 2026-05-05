@@ -33,7 +33,6 @@ export default function PixelStudio() {
   const handleSave = useCallback(async () => {
     const fileName = saveName.trim() || 'artwork'
 
-    // Browser download (real PNG file)
     const blob = await canvas.exportToBlob()
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -42,7 +41,6 @@ export default function PixelStudio() {
     a.click()
     URL.revokeObjectURL(url)
 
-    // Also save data URL to virtual FS for in-OS access
     const dataUrl = canvas.exportToPng()
     writeFile(`/Pictures/${fileName}.png`, dataUrl)
 

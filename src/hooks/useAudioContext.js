@@ -1,7 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
 
 let sharedContext = null
-let contextRefCount = 0
 
 function getSharedContext() {
   if (!sharedContext || sharedContext.state === 'closed') {
@@ -15,10 +14,6 @@ export default function useAudioContext() {
 
   useEffect(() => {
     ctxRef.current = getSharedContext()
-    contextRefCount++
-    return () => {
-      contextRefCount--
-    }
   }, [])
 
   const resume = useCallback(async () => {

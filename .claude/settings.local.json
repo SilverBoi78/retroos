@@ -56,7 +56,26 @@
       "Bash(wc:*)",
       "Bash(node -e \"const db = require\\('./db'\\); const indexes = db.prepare\\(\\\\\"SELECT name FROM sqlite_master WHERE type='index'\\\\\"\\).all\\(\\); console.log\\('Indexes:', indexes.map\\(i => i.name\\).join\\(', '\\)\\); db.close\\(\\);\")",
       "Bash(node -e \"const db = require\\('./db'\\); const tables = db.prepare\\(\\\\\"SELECT name FROM sqlite_master WHERE type='table'\\\\\"\\).all\\(\\); console.log\\('Tables:', tables.map\\(t => t.name\\).join\\(', '\\)\\); db.close\\(\\);\")",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(awk -F: '{sum+=$NF} END {print \"Single-line comments \\(//\\):\", sum}')",
+      "Bash(awk -F: '{sum+=$NF} END {print \"Block comments \\(/* */\\):\", sum}')",
+      "Bash(awk -F: '{sum+=$NF} END {print \"JSX comments \\({/* */\\):\", sum}')",
+      "Bash(grep *)",
+      "Bash(rg '^\\\\s*//' /home/antulior/code/retroos/backend/routes/fs.js -N)",
+      "Bash(awk -F: '{sum+=$NF} END {if \\(sum > 0\\) print \"Directive comments:\", sum}')",
+      "Bash(rg '^\\\\s*//' /home/antulior/code/retroos/src/apps/Personalization/Personalization.jsx -N)",
+      "Bash(rg '/\\\\*' /home/antulior/code/retroos/src/apps/RealmsOfAdventure/RealmsOfAdventure.css -A 1 -N)",
+      "Bash(rg '/\\\\*' /home/antulior/code/retroos/src/apps/Personalization/Personalization.css -A 1 -N)",
+      "Bash(rg '^\\\\s*//' /home/antulior/code/retroos/src/apps/ArcadeCabinet/games/SpaceShooter.jsx -N)",
+      "Bash(node *)",
+      "Read(//usr/bin/**)",
+      "Bash(command -v npm)",
+      "Read(//home/antulior/.nvm/versions/node/**)",
+      "Bash(find / -maxdepth 5 -name 'node' -type f)",
+      "Bash($NODE *)",
+      "Bash(/home/antulior/.nvm/versions/node/v22.22.0/bin/npm install *)",
+      "Bash(git -C /home/antulior/code/retroos diff --stat)",
+      "Bash(git -C /home/antulior/code/retroos status --short)"
     ]
   }
 }

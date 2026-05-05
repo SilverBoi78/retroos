@@ -18,11 +18,9 @@ export default function Canvas({
     if (!canvas) return
     const ctx = canvas.getContext('2d')
 
-    // Clear
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, displayW, displayH)
 
-    // Draw pixels
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const color = pixels[y * w + x]
@@ -33,7 +31,6 @@ export default function Canvas({
       }
     }
 
-    // Grid
     if (zoom >= 4) {
       ctx.strokeStyle = 'rgba(0,0,0,0.1)'
       ctx.lineWidth = 0.5

@@ -19,7 +19,6 @@ export default function Notepad({ windowId, appProps }) {
   const textareaRef = useRef(null)
   const hasLoadedFile = useRef(false)
 
-  // Load file if opened from File Manager
   useEffect(() => {
     if (hasLoadedFile.current) return
     if (appProps?.filePath) {

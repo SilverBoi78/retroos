@@ -18,19 +18,9 @@ export function resolvePath(cwd, inputPath) {
   return '/' + resolved.join('/')
 }
 
-export function getFileName(path) {
-  const parts = path.split('/').filter(Boolean)
-  return parts.length > 0 ? parts[parts.length - 1] : ''
-}
-
 export function getParentPath(path) {
   const parts = path.split('/').filter(Boolean)
   if (parts.length <= 1) return '/'
   parts.pop()
-  return '/' + parts.join('/')
-}
-
-export function joinPath(...segments) {
-  const parts = segments.join('/').split('/').filter(Boolean)
   return '/' + parts.join('/')
 }

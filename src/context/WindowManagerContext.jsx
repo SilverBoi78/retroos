@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useCallback } from 'react'
 import { getApp } from '../registry/appRegistry'
+import { play } from '../sounds'
 
 const WindowManagerContext = createContext(null)
 
@@ -154,14 +155,27 @@ function windowReducer(state, action) {
 export function WindowManagerProvider({ children }) {
   const [state, dispatch] = useReducer(windowReducer, initialState)
 
-  const openWindow = useCallback((appId, appProps) => dispatch({ type: 'OPEN_WINDOW', appId, appProps }), [])
+  const openWindow = useCallback((appId, appProps) => {
+    play('windowOpen')
+    dispatch({ type: 'OPEN_WINDOW', appId, appProps })
+  }, [])
   const closeWindow = useCallback((id) => {
+    play('windowClose')
     dispatch({ type: 'CLOSE_WINDOW_START', id })
     setTimeout(() => dispatch({ type: 'CLOSE_WINDOW', id }), 150)
   }, [])
-  const minimizeWindow = useCallback((id) => dispatch({ type: 'MINIMIZE_WINDOW', id }), [])
-  const maximizeWindow = useCallback((id) => dispatch({ type: 'MAXIMIZE_WINDOW', id }), [])
-  const restoreWindow = useCallback((id) => dispatch({ type: 'RESTORE_WINDOW', id }), [])
+  const minimizeWindow = useCallback((id) => {
+    play('windowMinimize')
+    dispatch({ type: 'MINIMIZE_WINDOW', id })
+  }, [])
+  const maximizeWindow = useCallback((id) => {
+    play('windowMaximize')
+    dispatch({ type: 'MAXIMIZE_WINDOW', id })
+  }, [])
+  const restoreWindow = useCallback((id) => {
+    play('windowMaximize')
+    dispatch({ type: 'RESTORE_WINDOW', id })
+  }, [])
   const focusWindow = useCallback((id) => dispatch({ type: 'FOCUS_WINDOW', id }), [])
   const updatePosition = useCallback((id, x, y) => dispatch({ type: 'UPDATE_POSITION', id, x, y }), [])
   const updateSize = useCallback((id, width, height) => dispatch({ type: 'UPDATE_SIZE', id, width, height }), [])

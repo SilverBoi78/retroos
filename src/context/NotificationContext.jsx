@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { play } from '../sounds'
 
 const NotificationContext = createContext(null)
 
@@ -22,6 +23,9 @@ export function NotificationProvider({ children }) {
     const type = options.type || 'info'
 
     setNotifications(prev => [...prev, { id, message, type, createdAt: Date.now() }])
+    if (type === 'error') play('error')
+    else if (type === 'success') play('success')
+    else play('notification')
 
     timersRef.current[id] = setTimeout(() => {
       dismiss(id)

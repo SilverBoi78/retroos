@@ -23,27 +23,22 @@ function AppContent() {
     return <BootScreen onComplete={handleBootComplete} />
   }
 
-  // Wait for session check — show login screen (not blank) while checking
-  if (loading) {
-    return <LoginScreen />
-  }
-
-  if (!isAuthenticated) {
+  if (loading || !isAuthenticated) {
     return <LoginScreen />
   }
 
   return (
-    <SettingsProvider>
-      <FileSystemProvider>
-        <WindowManagerProvider>
-          <NotificationProvider>
+    <NotificationProvider>
+      <SettingsProvider>
+        <FileSystemProvider>
+          <WindowManagerProvider>
             <ContextMenuProvider>
               <Desktop />
             </ContextMenuProvider>
-          </NotificationProvider>
-        </WindowManagerProvider>
-      </FileSystemProvider>
-    </SettingsProvider>
+          </WindowManagerProvider>
+        </FileSystemProvider>
+      </SettingsProvider>
+    </NotificationProvider>
   )
 }
 

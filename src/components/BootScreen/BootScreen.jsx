@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { play } from '../../sounds'
 import './BootScreen.css'
 
 const POST_LINES = [
@@ -17,7 +18,7 @@ const POST_LINES = [
 ]
 
 export default function BootScreen({ onComplete }) {
-  const [phase, setPhase] = useState('post') // post | logo | fade
+  const [phase, setPhase] = useState('post')
   const [visibleLines, setVisibleLines] = useState(0)
   const [progress, setProgress] = useState(0)
 
@@ -51,6 +52,12 @@ export default function BootScreen({ onComplete }) {
       return () => clearTimeout(timer)
     }
   }, [progress])
+
+  useEffect(() => {
+    if (phase === 'logo' && progress === 0) {
+      play('startup', { force: true })
+    }
+  }, [phase, progress])
 
   useEffect(() => {
     if (phase === 'fade') {

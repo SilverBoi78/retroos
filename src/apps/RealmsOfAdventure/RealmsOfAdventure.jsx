@@ -59,7 +59,6 @@ export default function RealmsOfAdventure({ windowId }) {
   const [readingName, setReadingName] = useState('')
   const [currentRealm, setCurrentRealm] = useState(null)
 
-  // Use refs for save file info so closures always have current values
   const savePathRef = useRef(null)
   const realmLabelRef = useRef('')
   const startTimeRef = useRef(null)
@@ -83,7 +82,6 @@ export default function RealmsOfAdventure({ windowId }) {
     const systemPrompt = buildSystemPrompt(realmId, detailLevel)
     const realm = REALMS.find(r => r.id === realmId) || REALMS[0]
 
-    // Kickoff message so the AI immediately starts narrating
     const initialMessages = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: 'Begin the adventure.' },
@@ -93,7 +91,6 @@ export default function RealmsOfAdventure({ windowId }) {
       const response = await chat(initialMessages)
       const allMessages = [...initialMessages, { role: 'assistant', content: response }]
 
-      // Set up save file
       ensureGamesDir()
       const now = new Date()
       const dateStr = now.toISOString().slice(0, 16).replace('T', '_').replace(':', '-')
@@ -111,7 +108,6 @@ export default function RealmsOfAdventure({ windowId }) {
       setScreen('game')
       updateWindowTitle(windowId, `Realms of Adventure — ${realm.name}`)
 
-      // Save initial transcript
       const content = buildTranscript(allMessages, realm.name, now, false)
       writeFile(filePath, content)
     } catch (err) {
@@ -131,10 +127,8 @@ export default function RealmsOfAdventure({ windowId }) {
     setTurnCount(newTurn)
     setIsLoading(true)
 
-    // Save with user message immediately
     saveTranscript(updatedMessages, false)
 
-    // Inject turn hint so the AI knows the pacing
     const messagesWithHint = [
       ...updatedMessages.slice(0, 1),
       { role: 'system', content: `[This is turn ${newTurn} of approximately 12-15. ${newTurn >= 10 ? 'Begin wrapping up the story now.' : ''} ${newTurn >= 13 ? 'Bring the adventure to its conclusion this turn or next.' : ''}]` },
@@ -147,7 +141,6 @@ export default function RealmsOfAdventure({ windowId }) {
       const allMessages = [...updatedMessages, assistantMessage]
       setMessages(allMessages)
 
-      // Check for game end
       const isEnding = response.includes('THE END') && newTurn >= 10
       if (isEnding) {
         setGameOver(true)

@@ -25,7 +25,6 @@ export default function useRadioPlayer() {
 
     const ctx = audioCtx
 
-    // Wait for previous to clean up
     await new Promise(r => setTimeout(r, 200))
 
     const osc = ctx.createOscillator()
@@ -34,7 +33,6 @@ export default function useRadioPlayer() {
     osc.type = station.waveform || 'sine'
     osc.frequency.setValueAtTime(station.frequency || 220, ctx.currentTime)
 
-    // Add slight modulation for interest
     const lfo = ctx.createOscillator()
     const lfoGain = ctx.createGain()
     lfo.frequency.setValueAtTime(0.3, ctx.currentTime)

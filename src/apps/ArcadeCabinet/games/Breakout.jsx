@@ -74,7 +74,6 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
     if (s.ball.x - BALL_R < 0 || s.ball.x + BALL_R > w) s.ball.dx *= -1
     if (s.ball.y - BALL_R < 0) s.ball.dy *= -1
 
-    // Paddle collision
     if (s.ball.dy > 0 &&
         s.ball.y + BALL_R >= s.paddle.y &&
         s.ball.y + BALL_R <= s.paddle.y + PADDLE_H &&
@@ -86,7 +85,6 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
       s.ball.dy = -BALL_SPEED * Math.cos(angle)
     }
 
-    // Ball out
     if (s.ball.y > h) {
       s.lives--
       if (s.lives <= 0) {
@@ -99,7 +97,6 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
       s.ball.dy = -BALL_SPEED * Math.cos(LAUNCH_ANGLE)
     }
 
-    // Brick collision
     for (const brick of s.bricks) {
       if (!brick.alive) continue
       if (s.ball.x + BALL_R > brick.x && s.ball.x - BALL_R < brick.x + brick.w &&
@@ -128,24 +125,20 @@ export default function Breakout({ onGameOver, onBack, canvasWidth, canvasHeight
     ctx.fillStyle = '#0a0a1a'
     ctx.fillRect(0, 0, w, h)
 
-    // Bricks
     for (const b of s.bricks) {
       if (!b.alive) continue
       ctx.fillStyle = b.color
       ctx.fillRect(b.x, b.y, b.w, b.h)
     }
 
-    // Paddle
     ctx.fillStyle = '#cccccc'
     ctx.fillRect(s.paddle.x, s.paddle.y, PADDLE_W, PADDLE_H)
 
-    // Ball
     ctx.fillStyle = '#ffffff'
     ctx.beginPath()
     ctx.arc(s.ball.x, s.ball.y, BALL_R, 0, Math.PI * 2)
     ctx.fill()
 
-    // HUD
     ctx.fillStyle = '#ffffff'
     ctx.font = '12px monospace'
     ctx.fillText(`Score: ${s.score}`, 8, 16)

@@ -5,8 +5,6 @@
   background: var(--color-surface);
 }
 
-/* ── Tabs ─────────────────────────────────────────────────────────────────── */
-
 .personalization__tabs {
   display: flex;
   gap: 0;
@@ -36,8 +34,6 @@
 .personalization__tab:hover:not(.personalization__tab--active) {
   background: var(--color-surface-light);
 }
-
-/* ── Content ──────────────────────────────────────────────────────────────── */
 
 .personalization__content {
   flex: 1;
@@ -77,8 +73,6 @@
   font-weight: 600;
   color: var(--color-text-primary);
 }
-
-/* ── Grid (theme/wallpaper cards) ─────────────────────────────────────────── */
 
 .personalization__grid {
   display: flex;
@@ -135,8 +129,6 @@
   font-weight: 700;
 }
 
-/* ── Theme Preview ────────────────────────────────────────────────────────── */
-
 .personalization__preview {
   width: 86px;
   height: 56px;
@@ -173,8 +165,6 @@
   border-top: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-/* ── Wallpaper Thumbnails ─────────────────────────────────────────────────── */
-
 .personalization__wp-thumb {
   width: 100%;
   height: 56px;
@@ -205,8 +195,6 @@
   display: block;
 }
 
-/* ── Color Picker ─────────────────────────────────────────────────────────── */
-
 .personalization__color-input {
   width: 40px;
   height: 28px;
@@ -221,8 +209,6 @@
   font-family: var(--font-mono);
   color: var(--color-text-secondary);
 }
-
-/* ── Accent Preview ───────────────────────────────────────────────────────── */
 
 .personalization__accent-preview {
   display: flex;
@@ -255,8 +241,6 @@
   font-size: var(--font-size-base);
   color: #ffffff;
 }
-
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
 
 .personalization__btn {
   padding: 4px 12px;
@@ -291,16 +275,12 @@
   margin: 0;
 }
 
-/* ── Row layout ───────────────────────────────────────────────────────────── */
-
 .personalization__row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-
-/* ── Radio / Option Groups ────────────────────────────────────────────────── */
 
 .personalization__option-group {
   display: flex;
@@ -320,8 +300,6 @@
 .personalization__radio input {
   cursor: pointer;
 }
-
-/* ── Custom Theme Editor ─────────────────────────────────────────────────── */
 
 .personalization__card--create {
   border: 2px dashed var(--color-surface-dark);

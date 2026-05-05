@@ -5,9 +5,10 @@ import { getThemeList, themes, registerCustomTheme, getCustomTheme, getTheme } f
 import { gradients, patterns, getPresetCSS } from './wallpaperPresets'
 import { cursorPresets } from '../../themes/cursorPresets'
 import { retroClassic } from '../../themes/themes'
+import { PACK_LIST, previewPack } from '../../sounds'
 import './Personalization.css'
 
-const TABS = ['Themes', 'Wallpaper', 'Colors', 'Display']
+const TABS = ['Themes', 'Wallpaper', 'Colors', 'Display', 'Sounds']
 
 export default function Personalization() {
   const [tab, setTab] = useState('Themes')
@@ -30,12 +31,114 @@ export default function Personalization() {
         {tab === 'Wallpaper' && <WallpaperTab />}
         {tab === 'Colors' && <ColorsTab />}
         {tab === 'Display' && <DisplayTab />}
+        {tab === 'Sounds' && <SoundsTab />}
       </div>
     </div>
   )
 }
 
-// ── Themes Tab ───────────────────────────────────────────────────────────────
+const SOUND_EVENTS = [
+  { id: 'windowOpen', label: 'Window open' },
+  { id: 'windowClose', label: 'Window close' },
+  { id: 'windowMinimize', label: 'Window minimize' },
+  { id: 'windowMaximize', label: 'Window maximize / restore' },
+  { id: 'notification', label: 'Notification' },
+  { id: 'login', label: 'Login / Logout' },
+  { id: 'startup', label: 'Startup' },
+]
+
+function SoundsTab() {
+  const { settings, updateSettings } = useSettings()
+  const sounds = settings.sounds || {}
+  const events = sounds.events || {}
+
+  function patchSounds(patch) {
+    updateSettings({ sounds: { ...sounds, ...patch } })
+  }
+
+  function toggleEvent(id) {
+    patchSounds({ events: { ...events, [id]: events[id] === false } })
+  }
+
+  return (
+    <div className="personalization__section">
+      <h3 className="personalization__section-title">System Sounds</h3>
+      <p className="personalization__section-desc">
+        Audio feedback for window actions, notifications, and OS events.
+      </p>
+
+      <div className="personalization__subsection">
+        <label className="personalization__radio">
+          <input
+            type="checkbox"
+            checked={sounds.enabled !== false}
+            onChange={(e) => patchSounds({ enabled: e.target.checked })}
+          />
+          <span>Enable system sounds</span>
+        </label>
+      </div>
+
+      <div className="personalization__subsection">
+        <label className="personalization__label">Sound Pack</label>
+        <div className="personalization__option-group">
+          {PACK_LIST.map(pack => (
+            <label key={pack.id} className="personalization__radio">
+              <input
+                type="radio"
+                name="soundPack"
+                checked={(sounds.packId || 'retro') === pack.id}
+                onChange={() => patchSounds({ packId: pack.id })}
+                disabled={sounds.enabled === false}
+              />
+              <span>{pack.name}</span>
+            </label>
+          ))}
+          <button
+            className="personalization__btn"
+            onClick={() => previewPack(sounds.packId || 'retro')}
+            disabled={sounds.enabled === false}
+          >
+            Preview
+          </button>
+        </div>
+      </div>
+
+      <div className="personalization__subsection">
+        <label className="personalization__label">Volume</label>
+        <div className="personalization__row">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round((sounds.volume ?? 0.5) * 100)}
+            onChange={(e) => patchSounds({ volume: Number(e.target.value) / 100 })}
+            disabled={sounds.enabled === false}
+          />
+          <span className="personalization__color-value">
+            {Math.round((sounds.volume ?? 0.5) * 100)}%
+          </span>
+        </div>
+      </div>
+
+      <div className="personalization__subsection">
+        <label className="personalization__label">Per-event toggles</label>
+        <div className="personalization__option-group">
+          {SOUND_EVENTS.map(evt => (
+            <label key={evt.id} className="personalization__radio">
+              <input
+                type="checkbox"
+                checked={events[evt.id] !== false}
+                onChange={() => toggleEvent(evt.id)}
+                disabled={sounds.enabled === false}
+              />
+              <span>{evt.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const THEME_COLOR_GROUPS = [
   { label: 'Desktop', keys: ['color-desktop-bg'] },
@@ -277,8 +380,6 @@ function ThemePreviewBox({ themeData }) {
   )
 }
 
-// ── Wallpaper Tab ────────────────────────────────────────────────────────────
-
 function WallpaperTab() {
   const { settings, updateSettings, uploadWallpaper, removeWallpaper, hasWallpaper, wallpaperUrl } = useSettings()
   const fileInput = useRef(null)
@@ -315,7 +416,7 @@ function WallpaperTab() {
     <div className="personalization__section">
       <h3 className="personalization__section-title">Wallpaper</h3>
 
-      {/* Theme default */}
+      {}
       <div className="personalization__subsection">
         <label className="personalization__label">Default</label>
         <div className="personalization__grid">
@@ -331,7 +432,7 @@ function WallpaperTab() {
         </div>
       </div>
 
-      {/* Solid color */}
+      {}
       <div className="personalization__subsection">
         <label className="personalization__label">Solid Color</label>
         <div className="personalization__row">
@@ -347,7 +448,7 @@ function WallpaperTab() {
         </div>
       </div>
 
-      {/* Gradients */}
+      {}
       <div className="personalization__subsection">
         <label className="personalization__label">Gradients</label>
         <div className="personalization__grid personalization__grid--small">
@@ -365,7 +466,7 @@ function WallpaperTab() {
         </div>
       </div>
 
-      {/* Patterns */}
+      {}
       <div className="personalization__subsection">
         <label className="personalization__label">Patterns</label>
         <div className="personalization__grid personalization__grid--small">
@@ -383,7 +484,7 @@ function WallpaperTab() {
         </div>
       </div>
 
-      {/* Custom image upload */}
+      {}
       <div className="personalization__subsection">
         <label className="personalization__label">Custom Image</label>
         <div className="personalization__row">
@@ -417,8 +518,6 @@ function WallpaperTab() {
     </div>
   )
 }
-
-// ── Colors Tab ───────────────────────────────────────────────────────────────
 
 function ColorsTab() {
   const { settings, updateSettings } = useSettings()
@@ -456,7 +555,7 @@ function ColorsTab() {
         </div>
       </div>
 
-      {/* Preview */}
+      {}
       <div className="personalization__subsection">
         <label className="personalization__label">Preview</label>
         <div className="personalization__accent-preview">
@@ -486,14 +585,12 @@ function lightenHex(hex, amount) {
   return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`
 }
 
-// ── Display Tab ──────────────────────────────────────────────────────────────
-
 function DisplayTab() {
   const { settings, updateSettings } = useSettings()
 
   return (
     <div className="personalization__section">
-      {/* Icon Size */}
+      {}
       <div className="personalization__subsection">
         <h3 className="personalization__section-title">Icon Size</h3>
         <div className="personalization__option-group">
@@ -515,7 +612,7 @@ function DisplayTab() {
         </div>
       </div>
 
-      {/* Font Size */}
+      {}
       <div className="personalization__subsection">
         <h3 className="personalization__section-title">Font Size</h3>
         <div className="personalization__option-group">
@@ -537,7 +634,7 @@ function DisplayTab() {
         </div>
       </div>
 
-      {/* Clock Format */}
+      {}
       <div className="personalization__subsection">
         <h3 className="personalization__section-title">Clock Format</h3>
         <div className="personalization__option-group">
@@ -562,7 +659,7 @@ function DisplayTab() {
         </div>
       </div>
 
-      {/* Cursor Theme */}
+      {}
       <div className="personalization__subsection">
         <h3 className="personalization__section-title">Cursor</h3>
         <div className="personalization__option-group">
@@ -580,7 +677,7 @@ function DisplayTab() {
         </div>
       </div>
 
-      {/* Screen Saver */}
+      {}
       <div className="personalization__subsection">
         <h3 className="personalization__section-title">Screen Saver</h3>
         <div className="personalization__option-group">

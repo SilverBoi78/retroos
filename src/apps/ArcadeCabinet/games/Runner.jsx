@@ -49,13 +49,11 @@ export default function Runner({ onGameOver, onBack, canvasWidth, canvasHeight }
 
     if (!s.started) { draw(); return }
 
-    // Jump
     if ((keysRef.current[' '] || keysRef.current['ArrowUp']) && s.player.grounded) {
       s.player.vy = JUMP_VEL
       s.player.grounded = false
     }
 
-    // Physics
     s.player.vy += GRAVITY * dt
     s.player.y += s.player.vy * dt
     if (s.player.y >= groundY - PLAYER_H) {
@@ -64,7 +62,6 @@ export default function Runner({ onGameOver, onBack, canvasWidth, canvasHeight }
       s.player.grounded = true
     }
 
-    // Spawn obstacles
     s.spawnTimer -= dt
     if (s.spawnTimer <= 0) {
       const obstH = 20 + Math.random() * 20
@@ -77,11 +74,9 @@ export default function Runner({ onGameOver, onBack, canvasWidth, canvasHeight }
       s.spawnTimer = 0.8 + Math.random() * 1.2
     }
 
-    // Move obstacles
     for (const o of s.obstacles) o.x -= s.speed * dt
     s.obstacles = s.obstacles.filter(o => o.x + o.w > -10)
 
-    // Collision
     for (const o of s.obstacles) {
       if (s.player.x + PLAYER_W > o.x + 3 && s.player.x < o.x + o.w - 3 &&
           s.player.y + PLAYER_H > o.y + 3) {
@@ -107,7 +102,6 @@ export default function Runner({ onGameOver, onBack, canvasWidth, canvasHeight }
     ctx.fillStyle = '#1a1a2a'
     ctx.fillRect(0, 0, w, h)
 
-    // Ground
     ctx.fillStyle = '#333344'
     ctx.fillRect(0, groundY, w, GROUND_Y_OFFSET)
     ctx.strokeStyle = '#555566'
@@ -116,15 +110,12 @@ export default function Runner({ onGameOver, onBack, canvasWidth, canvasHeight }
     ctx.lineTo(w, groundY)
     ctx.stroke()
 
-    // Player
     ctx.fillStyle = '#44ccff'
     ctx.fillRect(s.player.x, s.player.y, PLAYER_W, PLAYER_H)
 
-    // Obstacles
     ctx.fillStyle = '#ff6644'
     for (const o of s.obstacles) ctx.fillRect(o.x, o.y, o.w, o.h)
 
-    // Score
     ctx.fillStyle = '#ffffff'
     ctx.font = '12px monospace'
     ctx.fillText(`Score: ${Math.floor(s.score)}`, 8, 16)

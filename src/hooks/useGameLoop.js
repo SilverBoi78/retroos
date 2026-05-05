@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect } from 'react'
 
 export default function useGameLoop(callback, isRunning) {
   const callbackRef = useRef(callback)

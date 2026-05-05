@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState(null)
 
-  // Check for existing session on mount, with a timeout safety net
   useEffect(() => {
     let cancelled = false
     let resolved = false
@@ -20,7 +19,6 @@ export function AuthProvider({ children }) {
       setLoading(false)
     }
 
-    // Safety timeout — never stay on blank screen longer than 3 seconds
     const timeout = setTimeout(() => finish(null), 3000)
 
     apiFetch('/auth/me')

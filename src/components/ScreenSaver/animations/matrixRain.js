@@ -17,7 +17,6 @@ export default function matrixRain(ctx, width, height) {
       const x = i * FONT_SIZE
       const y = drops[i] * FONT_SIZE
 
-      // Head of the drop is bright white-green
       if (Math.random() > 0.5) {
         ctx.fillStyle = '#ffffff'
       } else {
@@ -25,7 +24,6 @@ export default function matrixRain(ctx, width, height) {
       }
       ctx.fillText(char, x, y)
 
-      // Trailing glow
       ctx.fillStyle = '#00cc33'
       if (y > FONT_SIZE) {
         const trailChar = chars[Math.floor(Math.random() * chars.length)]
@@ -41,7 +39,6 @@ export default function matrixRain(ctx, width, height) {
     animId = requestAnimationFrame(draw)
   }
 
-  // Initial black fill
   ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, width, height)
 

@@ -11,7 +11,6 @@ export function FileSystemProvider({ children }) {
 
   const bump = useCallback(() => setVersion(v => v + 1), [])
 
-  // Load the user's filesystem from the API on mount
   useEffect(() => {
     let cancelled = false
     fsApi.loadTree()
@@ -22,16 +21,17 @@ export function FileSystemProvider({ children }) {
         }
       })
       .catch(() => {
-        // If API fails, initialize with empty defaults so the UI doesn't break
         if (!cancelled) {
-          fsRef.current = createFileSystem({ initialTree: { type: 'directory', children: {} }, api: fsApi })
+          fsRef.current = createFileSystem({
+            initialTree: { type: 'directory', children: {} },
+            api: fsApi,
+          })
           setReady(true)
         }
       })
     return () => { cancelled = true }
   }, [])
 
-  // version in deps forces consumers to re-render when FS mutates (cache invalidation)
   const readDir = useCallback((path) => {
     return fsRef.current?.readDir(path) ?? null
   }, [version, ready])

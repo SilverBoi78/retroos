@@ -148,8 +148,6 @@
   background: var(--color-surface);
 }
 
-/* ── Image Preview ─────────────────────────────────────────────────────────── */
-
 .filemanager__image-overlay {
   position: absolute;
   top: 0;

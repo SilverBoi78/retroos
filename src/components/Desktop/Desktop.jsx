@@ -38,7 +38,7 @@ function useWallpaperStyle() {
         backgroundPosition: 'center',
       }
     }
-    return {} // 'theme' type — use CSS vars (default)
+    return {}
   }, [wp.type, wp.value, wallpaperUrl])
 }
 

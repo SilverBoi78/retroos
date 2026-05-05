@@ -38,18 +38,15 @@ export default function bouncingLogo(ctx, width, height) {
 
     ctx.font = `bold ${fontSize}px Tahoma, Geneva, sans-serif`
 
-    // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.5)'
     ctx.fillText(text, x + 2, y + 2)
 
-    // Main text
     ctx.fillStyle = currentColor
     ctx.fillText(text, x, y)
 
     animId = requestAnimationFrame(draw)
   }
 
-  // Initial black fill
   ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, width, height)
 

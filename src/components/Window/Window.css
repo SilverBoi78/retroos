@@ -95,7 +95,6 @@
   z-index: 10;
 }
 
-/* Window open/close animations */
 @keyframes windowOpen {
   from {
     transform: scale(0.5);

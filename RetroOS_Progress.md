@@ -62,6 +62,7 @@ The visual identity is a custom retro desktop inspired by Linux desktop environm
 - **Wallpaper tab** — Solid color picker, 12 gradient presets, 6 pattern presets, custom image upload (JPEG/PNG/GIF/WebP, max 10MB)
 - **Colors tab** — Custom accent color picker (overrides title bars, selections, menus) with live preview, reset to theme default
 - **Display tab** — Icon size (small/medium/large), font size (small/medium/large), clock format (12h/24h), cursor theme (Default/Retro Pixel/Crosshair), screen saver settings (enable/disable, animation type, idle timeout)
+- **Sounds tab** — Master enable, sound pack picker (Retro Beep / Modern / Silent), volume slider, per-event toggles (window open/close/minimize/maximize, notification, login, startup), pack preview button
 
 All settings persisted per-user in `user_settings.settings_json`. Custom wallpaper images stored as BLOBs in `user_wallpapers` table.
 
@@ -127,10 +128,12 @@ src/
 │   ├── appRegistry.js          App definitions array + getApp(id)
 │   └── appIcons.jsx            SVG icons keyed by app id
 ├── utils/
-│   ├── pathUtils.js            resolvePath, getFileName, getParentPath, joinPath
-│   └── audioUtils.js           NOTE_FREQUENCIES, playNote, createADSR, createNoiseBuffer
+│   └── pathUtils.js            resolvePath, getParentPath
+├── sounds/
+│   ├── index.js                playSound(eventName), setSoundConfig(cfg), previewPack(id)
+│   ├── synth.js                Web Audio helpers: tone, sweep, chord, sequence
+│   └── packs/                  retro.js, modern.js, silent.js — event → synth recipes
 ├── hooks/
-│   ├── useApi.js               Generic fetch hook (unused — ready for backend)
 │   ├── useGameLoop.js          requestAnimationFrame wrapper with delta time + cleanup
 │   └── useAudioContext.js      AudioContext singleton, browser autoplay policy handling
 ├── components/
@@ -154,13 +157,15 @@ src/
 AuthProvider                     ← always mounted
   ThemeProvider                  ← always mounted (themes work on login screen too)
     AppContent                   ← BootScreen (once) → LoginScreen → Desktop
-      SettingsProvider           ← only when authenticated (wallpaper, accent, display)
-        FileSystemProvider
-          WindowManagerProvider
-            NotificationProvider
+      NotificationProvider       ← above SettingsProvider so settings can toast on rollback
+        SettingsProvider         ← loads /settings once (themeId + settings + sounds + wallpaper)
+          FileSystemProvider
+            WindowManagerProvider
               ContextMenuProvider
                 Desktop
 ```
+
+Sound system is module-level (`src/sounds/`) — no React context, no provider. `SettingsProvider` pushes config via `setSoundConfig`; any component imports `play(eventName)` directly.
 
 Logging out unmounts the FileSystem + WindowManager tree, giving a clean slate on next login.
 
@@ -170,7 +175,8 @@ Logging out unmounts the FileSystem + WindowManager tree, giving a clean slate o
 - **App Props** — `openWindow(appId, appProps)` passes data to instances. Apps receive `{ windowId, appProps }`.
 - **Dynamic Window Titles** — Apps call `updateWindowTitle(windowId, 'new title')` to update their title bar.
 - **CSS Theming** — Every visual property references a CSS variable. See `src/themes/themes.js` for the full variable list.
-- **Settings System** — `SettingsContext` loads from `/api/settings`, applies CSS overrides for accent color, icon size, font size. Components read settings via `useSettings()` hook.
+- **Settings System** — `SettingsContext` loads from `/api/settings` (single call), applies CSS overrides for accent color, icon size, font size. Components read settings via `useSettings()` hook. Optimistic updates with toast-and-revert on API failure.
+- **Sound System** — `src/sounds/` is a module-level singleton. Any component imports `play(eventName)`. Settings sync via `setSoundConfig`. Packs are objects mapping event names to Web Audio synth recipes — easy to add new packs without touching call sites.
 
 ---
 
@@ -250,8 +256,6 @@ The theme automatically appears in the Personalization app.
 - Public beta launch
 
 ### Desktop Polish Backlog
-- Startup sound / UI sound effects
-- Screen saver (starfield, bouncing logo, matrix rain)
 - Alt+Tab window switcher
 - Desktop icon drag & drop
 - Taskbar system tray
@@ -290,14 +294,15 @@ Custom CSS cursors:
 
 Applied via CSS `cursor: url(...)` on the desktop container.
 
-### Sound Packs
-Audio feedback for OS events:
-- Window open/close/minimize/maximize
-- Button clicks, menu opens
-- Error/success notifications
-- Startup/shutdown sounds
+### Sound Packs &#10003; DONE
+Audio feedback for OS events. Three procedural packs (Retro Beep / Modern / Silent), per-event toggles, master volume, master enable, pack preview button. Packs are JS modules mapping event names to Web Audio synth recipes — adding a new pack requires no changes to call sites. See "Future Sound Pack Ideas" below for what could come next.
 
-Each pack is a set of small audio files loaded via Web Audio API. Users toggle on/off and select pack in Personalization.
+### Future Sound Pack Ideas
+- Sample-based packs (load `.wav`/`.mp3` from `public/sounds/<pack>/<event>.wav` instead of synth)
+- Premium packs (8-bit/NES, Ambient/Lofi) as part of monetization
+- Per-app sound overrides (e.g. ChiptuneMaker turns off system sounds while playing)
+- Hover/click micro-sounds (currently only major lifecycle events)
+- User-uploadable packs (drop a zip into Personalization, parse manifest)
 
 ### Screen Savers
 Activate after N minutes of inactivity:
@@ -434,10 +439,9 @@ ollama serve           # start Ollama (default port 11434)
 ollama run llama3.2    # ensure the model is pulled
 ```
 
-**localStorage keys used:**
-- `retroos-user` — auth session (JSON)
-- `retroos-theme` — theme ID (string)
-- `retroos-filesystem` — entire virtual file system (JSON)
+**Storage keys used:**
+- `sessionStorage: retroos-booted` — boot screen plays once per browser session
+- All user data (theme, settings, files, sounds, wallpaper) lives in the backend SQLite database under the authenticated user.
 
 
 ## BUGS
@@ -445,6 +449,30 @@ ollama run llama3.2    # ensure the model is pulled
 (No known bugs)
 
 ## Changelog
+
+### 2026-04-24 — Tech Debt Cleanup + Sound Packs
+
+**Cleanup:**
+- Deleted unused `src/hooks/useApi.js` (58 LOC) and `src/utils/audioUtils.js` (53 LOC) — both had zero imports.
+- Trimmed `src/utils/pathUtils.js` — removed unused `getFileName` and `joinPath` exports.
+- Stripped all 174 code comments across 34 files (`.js`, `.jsx`, `.css` in `src/` and `backend/`).
+- Removed dead `localStorage` fallback paths: dual-mode in `services/fileSystem.js`, `retroos-theme` bootstrap in `ThemeContext`. Backend is now the single source of truth.
+- Consolidated `/api/settings` fetching — `ThemeContext` and `SettingsContext` no longer duplicate the call. `SettingsContext` is the single loader; it pushes `themeId` into `ThemeContext` via `setThemeId`.
+- Excluded `backend/` from the frontend ESLint config (it's CommonJS; was producing dozens of false-positive errors).
+- Cleaned a few stale lint hits: unused `contextRefCount` in `useAudioContext`, unused `useCallback` import in `useGameLoop`.
+
+**Backend security & scaling:**
+- `SECRET_KEY` is now required in production (no insecure fallback). Dev gets an ephemeral random key with a warning.
+- Added `express-rate-limit` to `/api/auth/login` (10 / 15 min / IP) and `/api/auth/register` (5 / hour / IP). Server reads `TRUST_PROXY` env so per-IP buckets work behind Nginx.
+- `GET /api/fs/read-dir` no longer pulls full file contents — now `SELECT name, node_type, modified_at, length(content) AS size`. Cuts the directory-listing payload from kilobytes to bytes.
+- Wallpaper endpoint emits an `ETag` derived from `updated_at` and short-circuits with 304 when unchanged.
+- `updateSettings` now reverts local state and shows an error toast on API failure (was silently logging before). `NotificationProvider` moved above `SettingsProvider` to enable this.
+
+**New Feature: Sound Packs**
+- Three procedural packs: **Retro Beep** (square waves, classic chiptune), **Modern** (sine chimes), **Silent** (no-op).
+- Personalization > Sounds tab: master toggle, pack picker, volume slider, per-event toggles, pack preview button.
+- Hooked events: window open/close/minimize/maximize, notifications (info/error/success), login, logout, startup.
+- Architecture: module-level singleton at `src/sounds/` (no React context, no provider). `SettingsProvider` calls `setSoundConfig` when settings change; any component imports `play(eventName)` directly. Adding a new pack is a single new file under `src/sounds/packs/`.
 
 ### 2026-04-11 — Bug Fixes + Customization Features
 

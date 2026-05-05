@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { play } from '../../sounds'
 import './LoginScreen.css'
 
 export default function LoginScreen() {
   const { login, register, authError } = useAuth()
-  const [mode, setMode] = useState('login') // 'login' or 'register'
+  const [mode, setMode] = useState('login')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -42,8 +43,9 @@ export default function LoginScreen() {
       } else {
         await register(username.trim(), password)
       }
+      play('login', { force: true })
     } catch {
-      // authError is set by the context
+
     } finally {
       setSubmitting(false)
     }

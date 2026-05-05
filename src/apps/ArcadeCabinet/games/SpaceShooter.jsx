@@ -53,11 +53,9 @@ export default function SpaceShooter({ onGameOver, onBack, canvasWidth, canvasHe
       s.shootCooldown = 0.2
     }
 
-    // Move bullets
     for (const b of s.bullets) b.y -= 400 * dt
     s.bullets = s.bullets.filter(b => b.y > -BULLET_H)
 
-    // Spawn enemies
     s.spawnTimer -= dt
     if (s.spawnTimer <= 0) {
       s.enemies.push({
@@ -68,10 +66,8 @@ export default function SpaceShooter({ onGameOver, onBack, canvasWidth, canvasHe
       s.spawnTimer = 0.8 + Math.random() * 0.6
     }
 
-    // Move enemies
     for (const e of s.enemies) e.y += e.speed * dt
 
-    // Check enemy hits bottom / ship
     for (const e of s.enemies) {
       if (e.y > h) {
         s.gameOver = true
@@ -86,7 +82,6 @@ export default function SpaceShooter({ onGameOver, onBack, canvasWidth, canvasHe
       }
     }
 
-    // Bullet-enemy collision
     const deadEnemies = new Set()
     const deadBullets = new Set()
     for (let bi = 0; bi < s.bullets.length; bi++) {
@@ -118,7 +113,6 @@ export default function SpaceShooter({ onGameOver, onBack, canvasWidth, canvasHe
     ctx.fillStyle = '#0a0a1a'
     ctx.fillRect(0, 0, w, h)
 
-    // Ship
     ctx.fillStyle = '#44ccff'
     ctx.beginPath()
     ctx.moveTo(s.ship.x + SHIP_W / 2, s.ship.y)
@@ -127,18 +121,15 @@ export default function SpaceShooter({ onGameOver, onBack, canvasWidth, canvasHe
     ctx.closePath()
     ctx.fill()
 
-    // Bullets
     ctx.fillStyle = '#ffff44'
     for (const b of s.bullets) ctx.fillRect(b.x, b.y, BULLET_W, BULLET_H)
 
-    // Enemies
     ctx.fillStyle = '#ff4444'
     for (const e of s.enemies) {
       ctx.fillRect(e.x + 2, e.y, ENEMY_W - 4, ENEMY_H)
       ctx.fillRect(e.x, e.y + 4, ENEMY_W, ENEMY_H - 8)
     }
 
-    // HUD
     ctx.fillStyle = '#ffffff'
     ctx.font = '12px monospace'
     ctx.fillText(`Score: ${s.score}`, 8, 16)

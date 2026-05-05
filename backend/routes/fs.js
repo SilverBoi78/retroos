@@ -4,10 +4,7 @@ const { requireAuth } = require('../middleware');
 
 const router = Router();
 
-// All routes require authentication
 router.use(requireAuth);
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function validateName(name) {
   if (!name || name.length > 255 || /[\/\\\0]/.test(name) || name === '.' || name === '..') {
@@ -73,7 +70,6 @@ function resolveParentAndName(userId, pathStr) {
 function buildTree(userId) {
   const nodes = db.prepare('SELECT * FROM fs_nodes WHERE user_id = ?').all(userId);
 
-  // Build lookup maps
   const byId = new Map();
   const childrenOf = new Map();
   let root = null;
@@ -118,14 +114,10 @@ function buildTree(userId) {
   return buildNode(root);
 }
 
-// ── Routes ────────────────────────────────────────────────────────────────────
-
-// GET /api/fs/tree
 router.get('/tree', (req, res) => {
   res.json(buildTree(req.user.id));
 });
 
-// GET /api/fs/read-dir?path=/
 router.get('/read-dir', (req, res) => {
   const pathStr = req.query.path || '/';
   const node = resolvePath(req.user.id, pathStr);
@@ -133,18 +125,19 @@ router.get('/read-dir', (req, res) => {
   if (!node) return res.status(404).json({ detail: 'Directory not found' });
   if (node.node_type !== 'directory') return res.status(400).json({ detail: 'Not a directory' });
 
-  const children = db.prepare('SELECT * FROM fs_nodes WHERE parent_id = ?').all(node.id);
+  const children = db.prepare(
+    'SELECT name, node_type, modified_at, length(content) AS size FROM fs_nodes WHERE parent_id = ?'
+  ).all(node.id);
   res.json(
     children.map((c) => ({
       name: c.name,
       type: c.node_type,
       modifiedAt: c.modified_at || null,
-      size: c.content ? c.content.length : null,
+      size: c.size,
     }))
   );
 });
 
-// GET /api/fs/read-file?path=...
 router.get('/read-file', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
@@ -156,7 +149,6 @@ router.get('/read-file', (req, res) => {
   res.json({ content: node.content || '' });
 });
 
-// PUT /api/fs/write-file?path=...
 router.put('/write-file', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
@@ -183,7 +175,6 @@ router.put('/write-file', (req, res) => {
   res.json({ ok: true });
 });
 
-// POST /api/fs/create-dir?path=...
 router.post('/create-dir', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
@@ -200,7 +191,6 @@ router.post('/create-dir', (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE /api/fs/delete?path=...
 router.delete('/delete', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
@@ -213,7 +203,6 @@ router.delete('/delete', (req, res) => {
   res.json({ ok: true });
 });
 
-// PATCH /api/fs/rename?path=...
 router.patch('/rename', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
@@ -237,7 +226,6 @@ router.patch('/rename', (req, res) => {
   res.json({ ok: true });
 });
 
-// GET /api/fs/exists?path=...
 router.get('/exists', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });
@@ -246,7 +234,6 @@ router.get('/exists', (req, res) => {
   res.json({ exists: node !== null && node !== undefined });
 });
 
-// GET /api/fs/node-type?path=...
 router.get('/node-type', (req, res) => {
   const pathStr = req.query.path;
   if (!pathStr) return res.status(400).json({ detail: 'path query parameter is required' });

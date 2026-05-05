@@ -70,8 +70,7 @@ export default function ChiptuneMaker() {
 
   const handleLoad = useCallback(() => {
     const raw = readFile('/Music')
-    // Simple: just list files and load the first one found
-    // In a full version, this would use FileDialog
+
   }, [readFile])
 
   return (
